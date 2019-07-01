@@ -1,2 +1,4 @@
 # ipregistry-python
-Official Python client for Ipregistry
+Official Python client for Ipregistry.
+
+Coming soon.
