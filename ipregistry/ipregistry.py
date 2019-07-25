@@ -16,20 +16,20 @@
 
 import json
 
-from cache import DefaultCache, IpregistryCache
-from model import ApiError
-from request import DefaultRequestHandler, IpregistryRequestHandler
+from . import cache
+from . import model
+from . import request
 
 class IpregistryClient:
     def __init__(self, keyOrConfig, **kwargs):
         self._config = keyOrConfig if isinstance(keyOrConfig, IpregistryConfig) else IpregistryConfig(keyOrConfig)
-        self._cache = kwargs["cache"] if "cache" in kwargs else DefaultCache()
-        self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else DefaultRequestHandler(self._config)
+        self._cache = kwargs["cache"] if "cache" in kwargs else cache.DefaultCache()
+        self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else request.DefaultRequestHandler(self._config)
 
-        if not isinstance(self._cache, IpregistryCache):
+        if not isinstance(self._cache, cache.IpregistryCache):
             raise ValueError("Given cache instance is not of type IpregistryCache")
-        if not isinstance(self._requestHandler, IpregistryRequestHandler):
-            raise ValueError("Given requestHandler instance is not of type IpregistryRequestHandler")
+        if not isinstance(self._requestHandler, request.IpregistryRequestHandler):
+            raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
 
     def lookup(self, *args):
         length = len(args)
@@ -52,6 +52,7 @@ class IpregistryClient:
         print("Origin IP Lookup")
 
     def _singleLookup(self, ip):
+        # TODO: build cache key with options
         cacheKey = ip
         cacheValue = self._cache.get(cacheKey)
 
@@ -72,8 +73,8 @@ class IpregistryConfig:
          return "apiKey={}, apiUrl={}, timeout={}".format(self.apiKey, self.apiUrl, self.timeout)
 
 
-client = IpregistryClient("tryout")
-try:
-    print(client.lookup("1.1.1.2").ip)
-except ApiError as e:
-    print(e.code)
+# client = IpregistryClient("tryout")
+# try:
+#     print(client.lookup("1.1.1.2").ip)
+# except ApiError as e:
+#     print(e.code)

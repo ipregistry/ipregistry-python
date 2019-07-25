@@ -19,8 +19,8 @@ import requests
 import sys
 import urllib
 
-from __init__ import __version__
-from model import ApiError, ClientError, IpInfo
+from . import __init__
+from . import model
 
 @six.add_metaclass(abc.ABCMeta)
 class IpregistryRequestHandler:
@@ -58,14 +58,14 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         try:
             r = requests.get(self._buildApiUrl(ip), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
-            return IpInfo(r.json())
+            return model.IpInfo(r.json())
         except requests.HTTPError:
-            raise ApiError(r.json())
+            raise model.ApiError(r.json())
         except Exception as e:
-            raise ClientError(e)
+            raise model.ClientError(e)
 
     def _headers(self):
         return {
             "content-type": "application/json",
-            "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __version__
+            "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __init__.__version__
         }
