@@ -14,6 +14,8 @@
     limitations under the License.
 """
 
+import json
+
 class JsonPayload:
     def __init__(self, json):
         self._json = json
@@ -21,8 +23,11 @@ class JsonPayload:
     def __getattr__(self, attr):
         return self._json[attr]
 
-    def __str__(self):
+    def __repr__(self):
         return str(self._json)
+
+    def __str__(self):
+        return json.dumps(self._json, indent=4)
 
 class IpInfo(JsonPayload):
     pass
@@ -35,3 +40,6 @@ class ApiError(JsonPayload, IpregistryError):
 
 class ClientError(IpregistryError):
    pass
+
+class LookupError(JsonPayload, IpregistryError):
+    pass

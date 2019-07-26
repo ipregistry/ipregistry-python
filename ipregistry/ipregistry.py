@@ -17,6 +17,7 @@
 import json
 
 from .cache import DefaultCache, IpregistryCache
+from .model import LookupError
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 class IpregistryClient:
@@ -41,7 +42,34 @@ class IpregistryClient:
             raise ValueError("Invalid parameter type")
 
     def _batchLookup(self, ips, options):
-        print("Batch IP Lookup")
+        sparseCache = [None] * len(ips)
+        cacheMisses = []
+
+        for i in range(0, len(ips)):
+            ip = ips[i]
+            cacheKey = self._buildCacheKey(ip, options)
+            cacheValue = self._cache.get(cacheKey)
+            if cacheValue is None:
+                cacheMisses.append(ip)
+            else:
+                sparseCache[i] = cacheValue
+
+        result = [None] * len(ips)
+        freshIpInfo = self._requestHandler.batchLookup(cacheMisses, options)
+        j = 0
+        k = 0
+
+        for cachedIpInfo in sparseCache:
+            if cachedIpInfo is None:
+                if not isinstance(freshIpInfo[k], LookupError):
+                    self._cache.put(self._buildCacheKey(ips[j], options), freshIpInfo[k])
+                result[j] = freshIpInfo[k]
+                k += 1
+            else:
+                result[j] = cachedIpInfo
+            j += 1
+
+        return result
 
     def _originLookup(self, options):
         return self._singleLookup('', options)
@@ -65,6 +93,9 @@ class IpregistryClient:
             result += ';' + key + '=' + value
 
         return result
+
+    def _isApiError(self, data):
+        return 'code' in data
 
 class IpregistryConfig:
     def __init__(self, key, apiUrl="https://api.ipregistry.co", timeout=3):

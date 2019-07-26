@@ -14,8 +14,10 @@
     limitations under the License.
 """
 
-import abc, six
+import abc
+import json
 import requests
+import six
 import sys
 
 from six.moves.urllib.parse import quote
@@ -53,7 +55,14 @@ class IpregistryRequestHandler:
 
 class DefaultRequestHandler(IpregistryRequestHandler):
     def batchLookup(self, ips, options):
-        pass
+        try:
+            r = requests.post(self._buildApiUrl('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
+            r.raise_for_status()
+            return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(data), r.json()['results']))
+        except requests.HTTPError:
+            raise ApiError(r.json())
+        except Exception as e:
+            raise ClientError(e)
 
     def originLookup(self, options):
         return self.singleLookup('', options)
