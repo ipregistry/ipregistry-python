@@ -17,10 +17,12 @@
 import abc, six
 import requests
 import sys
-import urllib
 
-from . import __init__
-from . import model
+from six.moves.urllib.parse import quote
+
+from .__init__ import __version__
+from .model import ApiError, ClientError, IpInfo
+
 
 @six.add_metaclass(abc.ABCMeta)
 class IpregistryRequestHandler:
@@ -28,44 +30,46 @@ class IpregistryRequestHandler:
         self._config = config
 
     @abc.abstractmethod
-    def batchLookup(self, ips, **kwargs):
+    def batchLookup(self, ips, options):
         pass
 
     @abc.abstractmethod
-    def originLookup(self, **kwargs):
+    def originLookup(self, options):
         pass
 
     @abc.abstractmethod
-    def singleLookup(self, ip, *options):
+    def singleLookup(self, ip, options):
         pass
 
-    def _buildApiUrl(self, ip, **kwargs):
+    def _buildApiUrl(self, ip, options):
         result = self._config.apiUrl + "/" + ip + "?key=" + self._config.apiKey
 
-        for key, value in kwargs.items():
-            result += "&" + key + "=" + urllib.quote(value)
+        for key, value in options.items():
+            if isinstance(value, bool):
+                value = 'true' if value is True else 'false'
+            result += "&" + key + "=" + quote(value)
 
         return result
 
 class DefaultRequestHandler(IpregistryRequestHandler):
-    def batchLookup(self, ips, **kwargs):
+    def batchLookup(self, ips, options):
         pass
 
-    def originLookup(self, **kwargs):
-        return self.singleLookup('')
+    def originLookup(self, options):
+        return self.singleLookup('', options)
 
-    def singleLookup(self, ip, *options):
+    def singleLookup(self, ip, options):
         try:
-            r = requests.get(self._buildApiUrl(ip), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.get(self._buildApiUrl(ip, options), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
-            return model.IpInfo(r.json())
+            return IpInfo(r.json())
         except requests.HTTPError:
-            raise model.ApiError(r.json())
+            raise ApiError(r.json())
         except Exception as e:
-            raise model.ClientError(e)
+            raise ClientError(e)
 
     def _headers(self):
         return {
             "content-type": "application/json",
-            "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __init__.__version__
+            "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __version__
         }

@@ -21,6 +21,9 @@ class JsonPayload:
     def __getattr__(self, attr):
         return self._json[attr]
 
+    def __str__(self):
+        return str(self._json)
+
 class IpInfo(JsonPayload):
     pass
 

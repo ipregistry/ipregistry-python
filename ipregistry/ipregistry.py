@@ -16,52 +16,55 @@
 
 import json
 
-from . import cache
-from . import model
-from . import request
+from .cache import DefaultCache, IpregistryCache
+from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 class IpregistryClient:
     def __init__(self, keyOrConfig, **kwargs):
         self._config = keyOrConfig if isinstance(keyOrConfig, IpregistryConfig) else IpregistryConfig(keyOrConfig)
-        self._cache = kwargs["cache"] if "cache" in kwargs else cache.DefaultCache()
-        self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else request.DefaultRequestHandler(self._config)
+        self._cache = kwargs["cache"] if "cache" in kwargs else DefaultCache()
+        self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else DefaultRequestHandler(self._config)
 
-        if not isinstance(self._cache, cache.IpregistryCache):
+        if not isinstance(self._cache, IpregistryCache):
             raise ValueError("Given cache instance is not of type IpregistryCache")
-        if not isinstance(self._requestHandler, request.IpregistryRequestHandler):
+        if not isinstance(self._requestHandler, IpregistryRequestHandler):
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
 
-    def lookup(self, *args):
-        length = len(args)
-        if length == 0:
-            return self._originLookup()
-        elif length == 1:
-            if isinstance(args[0], list):
-                return self._batchLookup(args[0])
-            elif isinstance(args[0], str):
-                return self._singleLookup(args[0])
-            else:
-                raise ValueError('Invalid parameter type')
+    def lookup(self, ipOrList='', **options):
+        if ipOrList == '':
+            return self._originLookup(options)
+        elif isinstance(ipOrList, list):
+            return self._batchLookup(ipOrList, options)
+        elif isinstance(ipOrList, str):
+            return self._singleLookup(ipOrList, options)
         else:
-            raise ValueError("Invalid number of parameters")
+            raise ValueError("Invalid parameter type")
 
-    def _batchLookup(self, ips):
+    def _batchLookup(self, ips, options):
         print("Batch IP Lookup")
 
-    def _originLookup(self):
-        print("Origin IP Lookup")
+    def _originLookup(self, options):
+        return self._singleLookup('', options)
 
-    def _singleLookup(self, ip):
-        # TODO: build cache key with options
-        cacheKey = ip
+    def _singleLookup(self, ip, options):
+        cacheKey = self._buildCacheKey(ip, options)
         cacheValue = self._cache.get(cacheKey)
 
         if cacheValue is None:
-            cacheValue = self._requestHandler.singleLookup(ip)
+            cacheValue = self._requestHandler.singleLookup(ip, options)
             self._cache.put(cacheKey, cacheValue)
 
         return cacheValue
 
+    def _buildCacheKey(self, ip, options):
+        result = ip
+
+        for key, value in options.items():
+            if isinstance(value, bool):
+                value = 'true' if value is True else 'false'
+            result += ';' + key + '=' + value
+
+        return result
 
 class IpregistryConfig:
     def __init__(self, key, apiUrl="https://api.ipregistry.co", timeout=3):
@@ -71,10 +74,3 @@ class IpregistryConfig:
 
     def __str__(self):
          return "apiKey={}, apiUrl={}, timeout={}".format(self.apiKey, self.apiUrl, self.timeout)
-
-
-# client = IpregistryClient("tryout")
-# try:
-#     print(client.lookup("1.1.1.2").ip)
-# except ApiError as e:
-#     print(e.code)
