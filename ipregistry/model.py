@@ -24,7 +24,7 @@ class JsonPayload:
         return self._json[attr]
 
     def __repr__(self):
-        return str(self._json)
+        return self.__str__()
 
     def __str__(self):
         return json.dumps(self._json, indent=4)
