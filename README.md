@@ -51,6 +51,9 @@ ipInfo = client.lookup()
 print(ipInfo)
 ```
 
+More samples are available in the [samples](https://github.com/ipregistry/ipregistry-python/tree/master/samples) 
+folder.
+
 ### Caching
 
 The Ipregistry client has built-in support for in-memory caching. The default cache strategy is to memoize up to 
