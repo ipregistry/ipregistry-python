@@ -2,12 +2,8 @@ import setuptools
 
 from ipregistry import __version__
 
-long_description = """
-The official Python library for Ipregistry.
-
-Ipregistry is a non-intrusive IP geolocation and threat data lookup solution that retrieves geolocation but also
-security information with no explicit permission required from users. All you need is your client's IP address.
-"""
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setuptools.setup(
     name="ipregistry",
