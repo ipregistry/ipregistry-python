@@ -12,6 +12,7 @@ setuptools.setup(
     author_email="support@ipregistry.co",
     description="Official Python library for Ipregistry",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=["cachetools", "requests", "six"],
     url="https://github.com/ipregistry/ipregistry-python",
     packages=setuptools.find_packages(),
