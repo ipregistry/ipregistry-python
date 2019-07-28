@@ -51,13 +51,21 @@ ipInfo = client.lookup()
 print(ipInfo)
 ```
 
-More samples are available in the [samples](https://github.com/ipregistry/ipregistry-python/tree/master/samples) 
+More advanced examples are available in the [samples](https://github.com/ipregistry/ipregistry-python/tree/master/samples) 
 folder.
 
 ### Caching
 
 The Ipregistry client has built-in support for in-memory caching. The default cache strategy is to memoize up to 
-2048 lookups for at most 24h. You can disable caching by passing an instance of `NoCache`:
+2048 lookups for at most 24h. You can change preferences as follows:
+
+```python
+from ipregistry import DefaultCache, IpregistryClient
+
+client = IpregistryClient("YOUR_API_KEY", cache=DefaultCache(maxsize=4096, ttl=3600))
+```
+ 
+or disable caching by passing an instance of `NoCache`:
 
 ```python
 from ipregistry import IpregistryClient, NoCache
@@ -67,11 +75,23 @@ client = IpregistryClient("YOUR_API_KEY", cache=NoCache())
 
 ### Errors
 
-TODO
+All Ipregistry exceptions inherit `IpregistryError` class.
+
+Main subtypes are `ApiError` and `ClientError`.
+
+Errors of type _ApiError_ include a code field that maps to the one described in the [Ipregistry documentation](https://ipregistry.co/docs/errors).
 
 ### Filtering bots
 
-TODO
+You might want to prevent Ipregistry API requests for crawlers or bots browsing your pages.
+
+A manner to proceed is to identify bots using `User-Agent` header. To ease this process, the library includes a utility function:
+
+```python
+from ipregistry import UserAgent
+
+isBot = UserAgent.isBot('YOUR_USER_AGENT_HEADER_VALUE_HERE')
+```
 
 ## Other Libraries
 
