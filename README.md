@@ -37,8 +37,9 @@ print(ipInfo)
 from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
-ipInfoResults = client.lookup(["54.85.132.205", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
-print(ipInfoResults)
+results = client.lookup(["54.85.132.205", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
+for ipInfo in results:
+    print(ipInfo)
 ```
 
 #### Origin IP Lookup
@@ -85,7 +86,8 @@ Errors of type _ApiError_ include a code field that maps to the one described in
 
 You might want to prevent Ipregistry API requests for crawlers or bots browsing your pages.
 
-A manner to proceed is to identify bots using `User-Agent` header. To ease this process, the library includes a utility function:
+A manner to proceed is to identify bots using the `User-Agent` header. 
+To ease this process, the library includes a utility method:
 
 ```python
 from ipregistry import UserAgent
