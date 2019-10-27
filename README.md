@@ -58,14 +58,14 @@ folder.
 ### Caching
 
 The Ipregistry client has built-in support for in-memory caching. The default cache strategy is to memoize up to 
-2048 lookups for at most 24h. You can change preferences as follows:
+2048 lookups for at most 10min. You can change preferences as follows:
 
 ```python
 from ipregistry import DefaultCache, IpregistryClient
 
-client = IpregistryClient("YOUR_API_KEY", cache=DefaultCache(maxsize=4096, ttl=3600))
+client = IpregistryClient("YOUR_API_KEY", cache=DefaultCache(maxsize=2048, ttl=600))
 ```
- 
+
 or disable caching by passing an instance of `NoCache`:
 
 ```python

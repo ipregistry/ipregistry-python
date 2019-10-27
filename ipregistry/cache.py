@@ -37,7 +37,7 @@ class IpregistryCache:
         pass
 
 class DefaultCache(IpregistryCache):
-    def __init__(self, maxsize=2048, ttl=86400):
+    def __init__(self, maxsize=2048, ttl=600):
         self._cache = TTLCache(maxsize, ttl)
 
     def get(self, key):
