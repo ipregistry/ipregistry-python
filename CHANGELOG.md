@@ -16,7 +16,6 @@ You can still configure the cache period to a higher value:
 https://github.com/ipregistry/ipregistry-python#caching
 
 ## [1.0.0] - 2019-07-28
-
 - First public release.
 
 [Unreleased]: https://github.com/ipregistry/ipregistry-javascript/compare/1.1.0...HEAD

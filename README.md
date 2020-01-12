@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/v/ipregistry)](https://pypi.org/project/ipregistry/)
 
 This is the official Python client library for the [Ipregistry](https://ipregistry.co) IP geolocation and threat data API, 
-allowing you to lookup your own IP address or specified ones. Responses include more than 50 data points including 
+allowing you to lookup your own IP address or specified ones. Responses return up to 65 data points including 
 location, currency, timezone, threat information, and more.
 
 ## Getting Started
