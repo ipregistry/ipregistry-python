@@ -28,7 +28,7 @@ class TestIpregistryConfig(unittest.TestCase):
         print(requestHandler._config)
         self.assertEqual("tryout", requestHandler._config.apiKey)
         self.assertEqual("https://api.ipregistry.co", requestHandler._config.apiUrl)
-        self.assertEqual(3, requestHandler._config.timeout)
+        self.assertEqual(15, requestHandler._config.timeout)
 
     def test_config_optional_parameters(self):
         """

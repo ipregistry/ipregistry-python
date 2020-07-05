@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2020-07-05
+### Changed
+- Increase maximum timeout to 15s from 3s.
+
 ## [1.1.0] - 2019-10-27
 ### Changed
 - Decrease the default cache period to 10min from 24h. 

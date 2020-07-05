@@ -98,7 +98,7 @@ class IpregistryClient:
         return 'code' in data
 
 class IpregistryConfig:
-    def __init__(self, key, apiUrl="https://api.ipregistry.co", timeout=3):
+    def __init__(self, key, apiUrl="https://api.ipregistry.co", timeout=15):
         self.apiKey = key
         self.apiUrl = apiUrl
         self.timeout = timeout
