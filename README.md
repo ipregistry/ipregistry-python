@@ -2,7 +2,7 @@
 # Ipregistry Python Client Library
 
 [![License](http://img.shields.io/:license-apache-blue.svg)](LICENSE)
-[![Travis](https://travis-ci.com/ipregistry/ipregistry-python.svg?branch=master&style=flat-square)](https://travis-ci.com/ipregistry/ipregistry-python)
+[![Actions Status](https://github.com/ipregistry/ipregistry-python/workflows/Tests/badge.svg)](https://github.com/ipregistry/ipregistry-python/actions)
 [![PyPI](https://img.shields.io/pypi/v/ipregistry)](https://pypi.org/project/ipregistry/)
 
 This is the official Python client library for the [Ipregistry](https://ipregistry.co) IP geolocation and threat data API, 
