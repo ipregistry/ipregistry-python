@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - 2020-07-05
+## [2.0.0] - 2020-07-05
 ### Changed
+- Disable caching by default since people are often confused by this default setting. You can enable caching by following what is explained in the README.
 - Increase maximum timeout to 15s from 3s.
 
 ## [1.1.0] - 2019-10-27
@@ -22,6 +23,7 @@ https://github.com/ipregistry/ipregistry-python#caching
 ## [1.0.0] - 2019-07-28
 - First public release.
 
-[Unreleased]: https://github.com/ipregistry/ipregistry-javascript/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/ipregistry/ipregistry-javascript/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/1.1.0...2.0.0
 [1.1.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/1.0.0...1.1.0
 [1.0.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/1.0.0

@@ -57,8 +57,13 @@ folder.
 
 ### Caching
 
-The Ipregistry client has built-in support for in-memory caching. The default cache strategy is to memoize up to 
+This Ipregistry client library has built-in support for in-memory caching. By default caching is disabled. 
+Below are examples to enable and configure a caching strategy. Once enabled, default cache strategy is to memoize up to 
 2048 lookups for at most 10min. You can change preferences as follows:
+
+#### Enabling caching
+
+Enable caching by passing an instance of `DefaultCache`:
 
 ```python
 from ipregistry import DefaultCache, IpregistryClient
@@ -66,7 +71,9 @@ from ipregistry import DefaultCache, IpregistryClient
 client = IpregistryClient("YOUR_API_KEY", cache=DefaultCache(maxsize=2048, ttl=600))
 ```
 
-or disable caching by passing an instance of `NoCache`:
+#### Disabling caching
+
+Disable caching by passing an instance of `NoCache`:
 
 ```python
 from ipregistry import IpregistryClient, NoCache

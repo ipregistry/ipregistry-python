@@ -16,14 +16,14 @@
 
 import json
 
-from .cache import DefaultCache, IpregistryCache
+from .cache import IpregistryCache, NoCache
 from .model import LookupError
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 class IpregistryClient:
     def __init__(self, keyOrConfig, **kwargs):
         self._config = keyOrConfig if isinstance(keyOrConfig, IpregistryConfig) else IpregistryConfig(keyOrConfig)
-        self._cache = kwargs["cache"] if "cache" in kwargs else DefaultCache()
+        self._cache = kwargs["cache"] if "cache" in kwargs else NoCache()
         self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else DefaultRequestHandler(self._config)
 
         if not isinstance(self._cache, IpregistryCache):
