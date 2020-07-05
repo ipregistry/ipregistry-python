@@ -17,6 +17,7 @@ setuptools.setup(
     url="https://github.com/ipregistry/ipregistry-python",
     packages=setuptools.find_packages(),
     classifiers=[
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
