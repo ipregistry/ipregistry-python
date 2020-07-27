@@ -10,4 +10,4 @@ chardet==3.0.4            # via requests
 idna==2.10                 # via requests
 requests==2.24.0
 six==1.15.0
-urllib3==1.25.9           # via requests
+urllib3==1.25.10           # via requests
