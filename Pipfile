@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-cachetools = "==3.1.1"
+cachetools = "==4.2.1"
 certifi = "==2020.11.8"
 chardet = "==3.0.4"
 idna = "==2.10"
