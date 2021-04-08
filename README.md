@@ -9,6 +9,8 @@ This is the official Python client library for the [Ipregistry](https://ipregist
 allowing you to lookup your own IP address or specified ones. Responses return up to 65 data points including 
 location, currency, timezone, threat information, and more.
 
+Starting version 3.0.0 of the library, support for Python 2 has been dropped and the library requires Python 3.6+.
+
 ## Getting Started
 
 You'll need an Ipregistry API key, which you can get along with 100,000 free lookups by signing up for a free account at [https://ipregistry.co](https://ipregistry.co).
