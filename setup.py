@@ -25,5 +25,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Localization"
     ],
-    python_requires='>=2.7'
+    python_requires='>=3.6'
 )
