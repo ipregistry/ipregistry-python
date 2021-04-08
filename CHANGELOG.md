@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename _DefaultCache_ to _InMemoryCache_.
 
 ## [2.0.1] - 2020-09-25
+### Fixed
 - Fix packaging with version 2.0.0 deployed on pypi.
 
 ## [2.0.0] - 2020-07-05
