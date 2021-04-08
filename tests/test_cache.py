@@ -16,14 +16,14 @@
 
 import unittest
 
-from ipregistry.cache import DefaultCache, NoCache
+from ipregistry.cache import InMemoryCache, NoCache
 
 class TestIpregistryCache(unittest.TestCase):
     def test_defaultcache_get(self):
         """
         Test that get returns cache value
         """
-        cache = DefaultCache()
+        cache = InMemoryCache()
         self.assertEqual(None, cache.get("a"))
         cache.put("a", 1)
         self.assertEqual(1, cache.get("a"))
@@ -32,7 +32,7 @@ class TestIpregistryCache(unittest.TestCase):
         """
         Test that put override previous value
         """
-        cache = DefaultCache()
+        cache = InMemoryCache()
         cache.put("a", 1)
         cache.put("a", 2)
         self.assertEqual(2, cache.get("a"))
@@ -41,7 +41,7 @@ class TestIpregistryCache(unittest.TestCase):
         """
         Test that invalidate remove correct entries
         """
-        cache = DefaultCache()
+        cache = InMemoryCache()
         cache.put("a", 1)
         cache.put("b", 2)
         cache.put("c", 3)
@@ -54,7 +54,7 @@ class TestIpregistryCache(unittest.TestCase):
         """
         Test that invalidateAll remove all entries
         """
-        cache = DefaultCache()
+        cache = InMemoryCache()
         cache.put("a", 1)
         cache.put("b", 2)
         cache.put("c", 3)

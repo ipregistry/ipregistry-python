@@ -16,7 +16,6 @@
 
 import unittest
 
-from ipregistry.cache import DefaultCache, NoCache
 from ipregistry.util import UserAgent
 
 class TestIpregistryUserAgent(unittest.TestCase):

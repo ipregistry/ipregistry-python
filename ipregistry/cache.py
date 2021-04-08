@@ -36,7 +36,7 @@ class IpregistryCache:
     def invalidateAll(self):
         pass
 
-class DefaultCache(IpregistryCache):
+class InMemoryCache(IpregistryCache):
     def __init__(self, maxsize=2048, ttl=600):
         self._cache = TTLCache(maxsize, ttl)
 

@@ -14,8 +14,6 @@
     limitations under the License.
 """
 
-import json
-
 from .cache import IpregistryCache, NoCache
 from .model import LookupError
 from .request import DefaultRequestHandler, IpregistryRequestHandler
