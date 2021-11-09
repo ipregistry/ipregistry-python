@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Dependencies are now managed with [Poetry](https://python-poetry.org).
 ### Fixed
-- Fix setup.py import assymes deps already installed (#37).
+- Fix setup.py import assumes deps already installed ([#37](https://github.com/ipregistry/ipregistry-python/issues/37)).
 
 ## [3.1.0] - 2021-10-26
 ### Changed
