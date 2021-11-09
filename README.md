@@ -9,7 +9,7 @@ This is the official Python client library for the [Ipregistry](https://ipregist
 allowing you to lookup your own IP address or specified ones. Responses return multiple data points including carrier, 
 company, currency, location, timezone, threat information, and more.
 
-Starting version 3.0.0 of the library, support for Python 2 has been dropped and the library requires Python 3.6+.
+Starting version 3 of the library, support for Python 2 has been dropped and the library requires Python 3.6+.
 
 ## Getting Started
 

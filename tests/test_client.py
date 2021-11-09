@@ -14,9 +14,10 @@
     limitations under the License.
 """
 
+import os
 import unittest
 
-from ipregistry.cache import NoCache
+from ipregistry.cache import InMemoryCache, NoCache
 from ipregistry.core import IpregistryClient
 
 class TestIpregistryClient(unittest.TestCase):
@@ -26,6 +27,25 @@ class TestIpregistryClient(unittest.TestCase):
         """
         client = IpregistryClient("")
         self.assertEqual(True, isinstance(client._cache, NoCache))
+
+    def test_simple_lookup(self):
+        """
+        Test that a simple lookup returns data
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.lookup('8.8.8.8')
+        self.assertIsNotNone(response.ip)
+        self.assertIsNotNone(response.company['domain'])
+
+    def test_simple_lookup_in_memory_cache(self):
+        """
+        Test consecutive lookup with in-memory cache
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'), cache=InMemoryCache(maxsize=2048, ttl=600))
+        response = client.lookup('8.8.8.8')
+        response = client.lookup('8.8.8.8')
+        self.assertIsNotNone(response.ip)
+        self.assertIsNotNone(response.company['domain'])
 
 if __name__ == '__main__':
     unittest.main()
