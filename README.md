@@ -65,12 +65,12 @@ Below are examples to enable and configure a caching strategy. Once enabled, def
 
 #### Enabling caching
 
-Enable caching by passing an instance of `DefaultCache`:
+Enable caching by passing an instance of `InMemoryCache`:
 
 ```python
-from ipregistry import DefaultCache, IpregistryClient
+from ipregistry import InMemoryCache, IpregistryClient
 
-client = IpregistryClient("YOUR_API_KEY", cache=DefaultCache(maxsize=2048, ttl=600))
+client = IpregistryClient("YOUR_API_KEY", cache=InMemoryCache(maxsize=2048, ttl=600))
 ```
 
 #### Disabling caching
