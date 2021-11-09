@@ -1,6 +1,6 @@
 name = "ipregistry"
 
-__version__ = "3.1.0"
+from .version import __version__
 
 from .cache import *
 from .core import *

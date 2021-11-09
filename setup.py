@@ -1,6 +1,6 @@
 import setuptools
 
-from ipregistry import __version__
+exec(open('yourpackage/version.py').read())
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
