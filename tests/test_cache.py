@@ -59,7 +59,7 @@ class TestIpregistryCache(unittest.TestCase):
         cache.put("a", 1)
         cache.put("b", 2)
         cache.put("c", 3)
-        cache.invalidateAll()
+        cache.invalidate_all()
         self.assertEqual(None, cache.get("a"))
         self.assertEqual(None, cache.get("b"))
         self.assertEqual(None, cache.get("c"))

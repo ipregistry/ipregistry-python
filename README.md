@@ -29,8 +29,8 @@ pip install ipregistry
 from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
-ipInfo = client.lookup("54.85.132.205")
-print(ipInfo)
+ip_info = client.lookup("54.85.132.205")
+print(ip_info)
 ```
 
 #### Batch IP Lookup
@@ -40,8 +40,8 @@ from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
 results = client.lookup(["54.85.132.205", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
-for ipInfo in results:
-    print(ipInfo)
+for ip_info in results:
+    print(ip_info)
 ```
 
 #### Origin IP Lookup
@@ -50,8 +50,8 @@ for ipInfo in results:
 from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
-ipInfo = client.lookup()
-print(ipInfo)
+ip_info = client.lookup()
+print(ip_info)
 ```
 
 More advanced examples are available in the [samples](https://github.com/ipregistry/ipregistry-python/tree/master/samples) 
@@ -101,7 +101,7 @@ To ease this process, the library includes a utility method:
 ```python
 from ipregistry import UserAgent
 
-isBot = UserAgent.isBot('YOUR_USER_AGENT_HEADER_VALUE_HERE')
+is_bot = UserAgent.is_bot('YOUR_USER_AGENT_HEADER_VALUE_HERE')
 ```
 
 ## Other Libraries

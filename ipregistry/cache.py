@@ -34,7 +34,7 @@ class IpregistryCache:
         pass
 
     @abc.abstractmethod
-    def invalidateAll(self):
+    def invalidate_all(self):
         pass
 
 
@@ -54,7 +54,7 @@ class InMemoryCache(IpregistryCache):
     def invalidate(self, key):
         del self._cache[key]
 
-    def invalidateAll(self):
+    def invalidate_all(self):
         for key in self._cache:
             del self._cache[key]
 
@@ -72,5 +72,5 @@ class NoCache(IpregistryCache):
     def invalidate(self, key):
         pass
 
-    def invalidateAll(self):
+    def invalidate_all(self):
         pass

@@ -32,19 +32,19 @@ class IpregistryRequestHandler:
         self._config = config
 
     @abc.abstractmethod
-    def batchLookup(self, ips, options):
+    def batch_lookup(self, ips, options):
         pass
 
     @abc.abstractmethod
-    def originLookup(self, options):
+    def origin_lookup(self, options):
         pass
 
     @abc.abstractmethod
-    def singleLookup(self, ip, options):
+    def single_lookup(self, ip, options):
         pass
 
-    def _buildBaseUrl(self, ip, options):
-        result = self._config.baseUrl + "/" + ip + "?key=" + self._config.apiKey
+    def _build_base_url(self, ip, options):
+        result = self._config.base_url + "/" + ip + "?key=" + self._config.api_key
 
         for key, value in options.items():
             if isinstance(value, bool):
@@ -55,9 +55,9 @@ class IpregistryRequestHandler:
 
 
 class DefaultRequestHandler(IpregistryRequestHandler):
-    def batchLookup(self, ips, options):
+    def batch_lookup(self, ips, options):
         try:
-            r = requests.post(self._buildBaseUrl('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.post(self._build_base_url('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
             return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(data), r.json()['results']))
         except requests.HTTPError:
@@ -65,12 +65,12 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
-    def originLookup(self, options):
-        return self.singleLookup('', options)
+    def origin_lookup(self, options):
+        return self.single_lookup('', options)
 
-    def singleLookup(self, ip, options):
+    def single_lookup(self, ip, options):
         try:
-            r = requests.get(self._buildBaseUrl(ip, options), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.get(self._build_base_url(ip, options), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
             return IpInfo(r.json())
         except requests.HTTPError:

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Rename all function and variable names to use snake case.
 - Rename _IpregistryConfig_ option `apiUrl` to `baseUrl`.
 
 ## [3.2.0] - 2021-11-09

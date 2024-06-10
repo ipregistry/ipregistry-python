@@ -20,8 +20,8 @@ from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 
 class IpregistryClient:
-    def __init__(self, keyOrConfig, **kwargs):
-        self._config = keyOrConfig if isinstance(keyOrConfig, IpregistryConfig) else IpregistryConfig(keyOrConfig)
+    def __init__(self, key_or_config, **kwargs):
+        self._config = key_or_config if isinstance(key_or_config, IpregistryConfig) else IpregistryConfig(key_or_config)
         self._cache = kwargs["cache"] if "cache" in kwargs else NoCache()
         self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else DefaultRequestHandler(self._config)
 
@@ -30,39 +30,39 @@ class IpregistryClient:
         if not isinstance(self._requestHandler, IpregistryRequestHandler):
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
 
-    def lookup(self, ipOrList='', **options):
-        if ipOrList == '':
-            return self._originLookup(options)
-        elif isinstance(ipOrList, list):
-            return self._batchLookup(ipOrList, options)
-        elif isinstance(ipOrList, str):
-            return self._singleLookup(ipOrList, options)
+    def lookup(self, ip_or_list='', **options):
+        if ip_or_list == '':
+            return self._origin_lookup(options)
+        elif isinstance(ip_or_list, list):
+            return self._batch_lookup(ip_or_list, options)
+        elif isinstance(ip_or_list, str):
+            return self._single_lookup(ip_or_list, options)
         else:
             raise ValueError("Invalid parameter type")
 
-    def _batchLookup(self, ips, options):
-        sparseCache = [None] * len(ips)
-        cacheMisses = []
+    def _batch_lookup(self, ips, options):
+        sparse_cache = [None] * len(ips)
+        cache_misses = []
 
         for i in range(0, len(ips)):
             ip = ips[i]
-            cacheKey = self._buildCacheKey(ip, options)
-            cacheValue = self._cache.get(cacheKey)
-            if cacheValue is None:
-                cacheMisses.append(ip)
+            cache_key = self._build_cache_key(ip, options)
+            cache_value = self._cache.get(cache_key)
+            if cache_value is None:
+                cache_misses.append(ip)
             else:
-                sparseCache[i] = cacheValue
+                sparse_cache[i] = cache_value
 
         result = [None] * len(ips)
-        freshIpInfo = self._requestHandler.batchLookup(cacheMisses, options)
+        fresh_ip_info = self._requestHandler.batch_lookup(cache_misses, options)
         j = 0
         k = 0
 
-        for cachedIpInfo in sparseCache:
+        for cachedIpInfo in sparse_cache:
             if cachedIpInfo is None:
-                if not isinstance(freshIpInfo[k], LookupError):
-                    self._cache.put(self._buildCacheKey(ips[j], options), freshIpInfo[k])
-                result[j] = freshIpInfo[k]
+                if not isinstance(fresh_ip_info[k], LookupError):
+                    self._cache.put(self._build_cache_key(ips[j], options), fresh_ip_info[k])
+                result[j] = fresh_ip_info[k]
                 k += 1
             else:
                 result[j] = cachedIpInfo
@@ -70,20 +70,20 @@ class IpregistryClient:
 
         return result
 
-    def _originLookup(self, options):
-        return self._singleLookup('', options)
+    def _origin_lookup(self, options):
+        return self._single_lookup('', options)
 
-    def _singleLookup(self, ip, options):
-        cacheKey = self._buildCacheKey(ip, options)
-        cacheValue = self._cache.get(cacheKey)
+    def _single_lookup(self, ip, options):
+        cache_key = self._build_cache_key(ip, options)
+        cache_value = self._cache.get(cache_key)
 
-        if cacheValue is None:
-            cacheValue = self._requestHandler.singleLookup(ip, options)
-            self._cache.put(cacheKey, cacheValue)
+        if cache_value is None:
+            cache_value = self._requestHandler.single_lookup(ip, options)
+            self._cache.put(cache_key, cache_value)
 
-        return cacheValue
+        return cache_value
 
-    def _buildCacheKey(self, ip, options):
+    def _build_cache_key(self, ip, options):
         result = ip
 
         for key, value in options.items():
@@ -93,15 +93,15 @@ class IpregistryClient:
 
         return result
 
-    def _isApiError(self, data):
+    def _is_api_error(self, data):
         return 'code' in data
 
 
 class IpregistryConfig:
-    def __init__(self, key, baseUrl="https://api.ipregistry.co", timeout=15):
-        self.apiKey = key
-        self.baseUrl = baseUrl
+    def __init__(self, key, base_url="https://api.ipregistry.co", timeout=15):
+        self.api_key = key
+        self.base_url = base_url
         self.timeout = timeout
 
     def __str__(self):
-         return "apiKey={}, baseUrl={}, timeout={}".format(self.apiKey, self.baseUrl, self.timeout)
+         return "api_key={}, base_url={}, timeout={}".format(self.api_key, self.base_url, self.timeout)

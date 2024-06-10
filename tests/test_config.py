@@ -25,21 +25,21 @@ class TestIpregistryConfig(unittest.TestCase):
         """
         Test that default config use right parameters
         """
-        requestHandler = DefaultRequestHandler(IpregistryConfig("tryout"))
-        print(requestHandler._config)
-        self.assertEqual("tryout", requestHandler._config.apiKey)
-        self.assertEqual("https://api.ipregistry.co", requestHandler._config.baseUrl)
-        self.assertEqual(15, requestHandler._config.timeout)
+        request_handler = DefaultRequestHandler(IpregistryConfig("tryout"))
+        print(request_handler._config)
+        self.assertEqual("tryout", request_handler._config.api_key)
+        self.assertEqual("https://api.ipregistry.co", request_handler._config.base_url)
+        self.assertEqual(15, request_handler._config.timeout)
 
     def test_config_optional_parameters(self):
         """
         Test that config takes into account optional parameters
         """
-        requestHandler = DefaultRequestHandler(IpregistryConfig("MY_API_KEY", "https://custom.acme.com", 10))
-        print(requestHandler._config)
-        self.assertEqual("MY_API_KEY", requestHandler._config.apiKey)
-        self.assertEqual("https://custom.acme.com", requestHandler._config.baseUrl)
-        self.assertEqual(10, requestHandler._config.timeout)
+        request_handler = DefaultRequestHandler(IpregistryConfig("MY_API_KEY", "https://custom.acme.com", 10))
+        print(request_handler._config)
+        self.assertEqual("MY_API_KEY", request_handler._config.api_key)
+        self.assertEqual("https://custom.acme.com", request_handler._config.base_url)
+        self.assertEqual(10, request_handler._config.timeout)
 
 
 if __name__ == '__main__':
