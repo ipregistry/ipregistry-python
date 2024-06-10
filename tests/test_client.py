@@ -34,7 +34,7 @@ class TestIpregistryClient(unittest.TestCase):
         Test that a simple lookup returns data
         """
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
-        response = client.lookup('8.8.8.8')
+        response = client.lookup_ip('8.8.8.8')
         self.assertIsNotNone(response.ip)
         self.assertIsNotNone(response.company.domain)
         self.assertEqual('US', response.location.country.code)
@@ -44,8 +44,8 @@ class TestIpregistryClient(unittest.TestCase):
         Test consecutive lookup with in-memory cache
         """
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'), cache=InMemoryCache(maxsize=2048, ttl=600))
-        response = client.lookup('8.8.8.8')
-        response = client.lookup('8.8.8.8')
+        response = client.lookup_ip('8.8.8.8')
+        response = client.lookup_ip('8.8.8.8')
         self.assertIsNotNone(response.ip)
         self.assertIsNotNone(response.company.domain)
 

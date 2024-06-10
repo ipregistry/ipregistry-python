@@ -19,7 +19,7 @@ from ipregistry import ApiError, ClientError, IpInfo, IpregistryClient, LookupEr
 try:
     apiKey = "tryout"
     client = IpregistryClient(apiKey)
-    ipInfoList = client.lookup(["73.2.2.2", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
+    ipInfoList = client.batch_lookup_ips(["73.2.2.2", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
 
     for lookupResult in ipInfoList:
         if isinstance(lookupResult, IpInfo):

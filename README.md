@@ -29,7 +29,7 @@ pip install ipregistry
 from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
-ip_info = client.lookup("54.85.132.205")
+ip_info = client.lookup_ip("54.85.132.205")
 print(ip_info)
 ```
 
@@ -39,7 +39,7 @@ print(ip_info)
 from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
-results = client.lookup(["54.85.132.205", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
+results = client.batch_lookup_ips(["54.85.132.205", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
 for ip_info in results:
     print(ip_info)
 ```
@@ -50,7 +50,7 @@ for ip_info in results:
 from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
-ip_info = client.lookup()
+ip_info = client.origin_lookup_ip()
 print(ip_info)
 ```
 

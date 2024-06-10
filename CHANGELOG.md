@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Require Python 3.8+.
+- Replace the function named `lookup` by 3 new functions: `batch_lookup_ips`, `lookup_ip` and `origin_lookup_ip`.
 - Introduce data model for responses to enable field value access using dot notation and ensure code autocompletion functionality.
 - Rename all function and variable names to adhere to snake_case convention.
 - Rename _IpregistryConfig_ option `apiUrl` to `baseUrl`.

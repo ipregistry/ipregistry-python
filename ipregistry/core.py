@@ -30,23 +30,13 @@ class IpregistryClient:
         if not isinstance(self._requestHandler, IpregistryRequestHandler):
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
 
-    def lookup(self, ip_or_list='', **options):
-        if ip_or_list == '':
-            return self._origin_lookup(options)
-        elif isinstance(ip_or_list, list):
-            return self._batch_lookup(ip_or_list, options)
-        elif isinstance(ip_or_list, str):
-            return self._single_lookup(ip_or_list, options)
-        else:
-            raise ValueError("Invalid parameter type")
-
-    def _batch_lookup(self, ips, options):
+    def batch_lookup_ips(self, ips, options):
         sparse_cache = [None] * len(ips)
         cache_misses = []
 
         for i in range(0, len(ips)):
             ip = ips[i]
-            cache_key = self._build_cache_key(ip, options)
+            cache_key = self.__build_cache_key(ip, options)
             cache_value = self._cache.get(cache_key)
             if cache_value is None:
                 cache_misses.append(ip)
@@ -54,14 +44,14 @@ class IpregistryClient:
                 sparse_cache[i] = cache_value
 
         result = [None] * len(ips)
-        fresh_ip_info = self._requestHandler.batch_lookup(cache_misses, options)
+        fresh_ip_info = self._requestHandler.batch_lookup_ips(cache_misses, options)
         j = 0
         k = 0
 
         for cachedIpInfo in sparse_cache:
             if cachedIpInfo is None:
                 if not isinstance(fresh_ip_info[k], LookupError):
-                    self._cache.put(self._build_cache_key(ips[j], options), fresh_ip_info[k])
+                    self._cache.put(self.__build_cache_key(ips[j], options), fresh_ip_info[k])
                 result[j] = fresh_ip_info[k]
                 k += 1
             else:
@@ -70,20 +60,27 @@ class IpregistryClient:
 
         return result
 
-    def _origin_lookup(self, options):
-        return self._single_lookup('', options)
+    def lookup_ip(self, ip='', **options):
+        if isinstance(ip, str) and len(ip) > 0:
+            return self.__lookup_ip(ip, options)
+        else:
+            raise ValueError("Invalid value for 'ip' parameter: " + ip)
 
-    def _single_lookup(self, ip, options):
-        cache_key = self._build_cache_key(ip, options)
+    def origin_lookup_ip(self, **options):
+        return self.__lookup_ip('', options)
+
+    def __lookup_ip(self, ip, options):
+        cache_key = self.__build_cache_key(ip, options)
         cache_value = self._cache.get(cache_key)
 
         if cache_value is None:
-            cache_value = self._requestHandler.single_lookup(ip, options)
+            cache_value = self._requestHandler.lookup_ip(ip, options)
             self._cache.put(cache_key, cache_value)
 
         return cache_value
 
-    def _build_cache_key(self, ip, options):
+    @staticmethod
+    def __build_cache_key(ip, options):
         result = ip
 
         for key, value in options.items():
@@ -93,7 +90,8 @@ class IpregistryClient:
 
         return result
 
-    def _is_api_error(self, data):
+    @staticmethod
+    def __is_api_error(data):
         return 'code' in data
 
 

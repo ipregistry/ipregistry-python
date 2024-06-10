@@ -19,7 +19,7 @@ from ipregistry import ApiError, ClientError, IpregistryClient, NoCache
 try:
     apiKey = "tryout"
     client = IpregistryClient(apiKey, cache=NoCache())
-    ipInfo = client.lookup("54.85.132.205")
+    ipInfo = client.lookup_ip("54.85.132.205")
     print(ipInfo)
 except ApiError as e:
     print("API error", e)

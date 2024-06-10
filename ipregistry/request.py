@@ -29,15 +29,15 @@ class IpregistryRequestHandler(ABC):
         self._config = config
 
     @abstractmethod
-    def batch_lookup(self, ips, options):
+    def batch_lookup_ips(self, ips, options):
         pass
 
     @abstractmethod
-    def origin_lookup(self, options):
+    def lookup_ip(self, ip, options):
         pass
 
     @abstractmethod
-    def single_lookup(self, ip, options):
+    def origin_lookup_ip(self, options):
         pass
 
     def _build_base_url(self, ip, options):
@@ -52,9 +52,9 @@ class IpregistryRequestHandler(ABC):
 
 
 class DefaultRequestHandler(IpregistryRequestHandler):
-    def batch_lookup(self, ips, options):
+    def batch_lookup_ips(self, ips, options):
         try:
-            r = requests.post(self._build_base_url('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.post(self._build_base_url('', options), data=json.dumps(ips), headers=self.__headers(), timeout=self._config.timeout)
             r.raise_for_status()
             return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(**data), r.json()['results']))
         except requests.HTTPError:
@@ -62,12 +62,9 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
-    def origin_lookup(self, options):
-        return self.single_lookup('', options)
-
-    def single_lookup(self, ip, options):
+    def lookup_ip(self, ip, options):
         try:
-            r = requests.get(self._build_base_url(ip, options), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.get(self._build_base_url(ip, options), headers=self.__headers(), timeout=self._config.timeout)
             r.raise_for_status()
             return IpInfo(**r.json())
         except requests.HTTPError:
@@ -75,7 +72,11 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
-    def _headers(self):
+    def origin_lookup_ip(self, options):
+        return self.lookup_ip('', options)
+
+    @staticmethod
+    def __headers():
         return {
             "content-type": "application/json",
             "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __version__
