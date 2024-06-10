@@ -18,6 +18,7 @@ import abc, six
 
 from cachetools import TTLCache
 
+
 @six.add_metaclass(abc.ABCMeta)
 class IpregistryCache:
     @abc.abstractmethod
@@ -35,6 +36,7 @@ class IpregistryCache:
     @abc.abstractmethod
     def invalidateAll(self):
         pass
+
 
 class InMemoryCache(IpregistryCache):
     def __init__(self, maxsize=2048, ttl=600):
@@ -55,6 +57,7 @@ class InMemoryCache(IpregistryCache):
     def invalidateAll(self):
         for key in self._cache:
             del self._cache[key]
+
 
 class NoCache(IpregistryCache):
     def __init__(self, maxsize=2048, ttl=86400):

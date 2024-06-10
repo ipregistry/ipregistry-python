@@ -16,6 +16,7 @@
 
 import json
 
+
 class JsonPayload:
     def __init__(self, json):
         self._json = json
@@ -29,17 +30,22 @@ class JsonPayload:
     def __str__(self):
         return json.dumps(self._json, indent=4)
 
+
 class IpInfo(JsonPayload):
     pass
+
 
 class IpregistryError(Exception):
     pass
 
+
 class ApiError(JsonPayload, IpregistryError):
     pass
 
+
 class ClientError(IpregistryError):
    pass
+
 
 class LookupError(JsonPayload, IpregistryError):
     pass

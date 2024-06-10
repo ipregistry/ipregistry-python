@@ -53,6 +53,7 @@ class IpregistryRequestHandler:
 
         return result
 
+
 class DefaultRequestHandler(IpregistryRequestHandler):
     def batchLookup(self, ips, options):
         try:

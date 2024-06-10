@@ -19,6 +19,7 @@ import unittest
 from ipregistry.core import IpregistryConfig
 from ipregistry.request import DefaultRequestHandler
 
+
 class TestIpregistryConfig(unittest.TestCase):
     def test_default_config(self):
         """
@@ -39,6 +40,7 @@ class TestIpregistryConfig(unittest.TestCase):
         self.assertEqual("MY_API_KEY", requestHandler._config.apiKey)
         self.assertEqual("https://custom.acme.com", requestHandler._config.baseUrl)
         self.assertEqual(10, requestHandler._config.timeout)
+
 
 if __name__ == '__main__':
     unittest.main()

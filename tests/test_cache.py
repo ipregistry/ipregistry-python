@@ -18,6 +18,7 @@ import unittest
 
 from ipregistry.cache import InMemoryCache, NoCache
 
+
 class TestIpregistryCache(unittest.TestCase):
     def test_defaultcache_get(self):
         """
@@ -71,6 +72,7 @@ class TestIpregistryCache(unittest.TestCase):
         self.assertEqual(None, cache.get("a"))
         cache.put("a", 1)
         self.assertEqual(None, cache.get("a"))
+
 
 if __name__ == '__main__':
     unittest.main()

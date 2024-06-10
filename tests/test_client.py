@@ -20,6 +20,7 @@ import unittest
 from ipregistry.cache import InMemoryCache, NoCache
 from ipregistry.core import IpregistryClient
 
+
 class TestIpregistryClient(unittest.TestCase):
     def test_defaultclient_cache(self):
         """
@@ -46,6 +47,7 @@ class TestIpregistryClient(unittest.TestCase):
         response = client.lookup('8.8.8.8')
         self.assertIsNotNone(response.ip)
         self.assertIsNotNone(response.company['domain'])
+
 
 if __name__ == '__main__':
     unittest.main()

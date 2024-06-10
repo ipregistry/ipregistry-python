@@ -18,6 +18,7 @@ from .cache import IpregistryCache, NoCache
 from .model import LookupError
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
+
 class IpregistryClient:
     def __init__(self, keyOrConfig, **kwargs):
         self._config = keyOrConfig if isinstance(keyOrConfig, IpregistryConfig) else IpregistryConfig(keyOrConfig)
@@ -94,6 +95,7 @@ class IpregistryClient:
 
     def _isApiError(self, data):
         return 'code' in data
+
 
 class IpregistryConfig:
     def __init__(self, key, baseUrl="https://api.ipregistry.co", timeout=15):
