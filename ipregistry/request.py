@@ -43,8 +43,8 @@ class IpregistryRequestHandler:
     def singleLookup(self, ip, options):
         pass
 
-    def _buildApiUrl(self, ip, options):
-        result = self._config.apiUrl + "/" + ip + "?key=" + self._config.apiKey
+    def _buildBaseUrl(self, ip, options):
+        result = self._config.baseUrl + "/" + ip + "?key=" + self._config.apiKey
 
         for key, value in options.items():
             if isinstance(value, bool):
@@ -56,7 +56,7 @@ class IpregistryRequestHandler:
 class DefaultRequestHandler(IpregistryRequestHandler):
     def batchLookup(self, ips, options):
         try:
-            r = requests.post(self._buildApiUrl('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.post(self._buildBaseUrl('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
             return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(data), r.json()['results']))
         except requests.HTTPError:
@@ -69,7 +69,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
 
     def singleLookup(self, ip, options):
         try:
-            r = requests.get(self._buildApiUrl(ip, options), headers=self._headers(), timeout=self._config.timeout)
+            r = requests.get(self._buildBaseUrl(ip, options), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
             return IpInfo(r.json())
         except requests.HTTPError:

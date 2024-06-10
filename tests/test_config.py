@@ -27,7 +27,7 @@ class TestIpregistryConfig(unittest.TestCase):
         requestHandler = DefaultRequestHandler(IpregistryConfig("tryout"))
         print(requestHandler._config)
         self.assertEqual("tryout", requestHandler._config.apiKey)
-        self.assertEqual("https://api.ipregistry.co", requestHandler._config.apiUrl)
+        self.assertEqual("https://api.ipregistry.co", requestHandler._config.baseUrl)
         self.assertEqual(15, requestHandler._config.timeout)
 
     def test_config_optional_parameters(self):
@@ -37,7 +37,7 @@ class TestIpregistryConfig(unittest.TestCase):
         requestHandler = DefaultRequestHandler(IpregistryConfig("MY_API_KEY", "https://custom.acme.com", 10))
         print(requestHandler._config)
         self.assertEqual("MY_API_KEY", requestHandler._config.apiKey)
-        self.assertEqual("https://custom.acme.com", requestHandler._config.apiUrl)
+        self.assertEqual("https://custom.acme.com", requestHandler._config.baseUrl)
         self.assertEqual(10, requestHandler._config.timeout)
 
 if __name__ == '__main__':
