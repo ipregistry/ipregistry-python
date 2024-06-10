@@ -14,26 +14,24 @@
     limitations under the License.
 """
 
-import abc, six
-
+from abc import ABC, abstractmethod
 from cachetools import TTLCache
 
 
-@six.add_metaclass(abc.ABCMeta)
-class IpregistryCache:
-    @abc.abstractmethod
+class IpregistryCache(ABC):
+    @abstractmethod
     def get(self, key):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def put(self, key, data):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def invalidate(self, key):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def invalidate_all(self):
         pass
 

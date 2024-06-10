@@ -14,32 +14,29 @@
     limitations under the License.
 """
 
-import abc
+from abc import ABC, abstractmethod
 import json
 import requests
-import six
 import sys
-
-from six.moves.urllib.parse import quote
+import urllib.parse
 
 from .__init__ import __version__
 from .model import ApiError, ClientError, IpInfo
 
 
-@six.add_metaclass(abc.ABCMeta)
-class IpregistryRequestHandler:
+class IpregistryRequestHandler(ABC):
     def __init__(self, config):
         self._config = config
 
-    @abc.abstractmethod
+    @abstractmethod
     def batch_lookup(self, ips, options):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def origin_lookup(self, options):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def single_lookup(self, ip, options):
         pass
 
@@ -49,7 +46,7 @@ class IpregistryRequestHandler:
         for key, value in options.items():
             if isinstance(value, bool):
                 value = 'true' if value is True else 'false'
-            result += "&" + key + "=" + quote(value)
+            result += "&" + key + "=" + urllib.parse.quote(value)
 
         return result
 
