@@ -21,10 +21,11 @@ repository = 'https://github.com/ipregistry/ipregistry-python'
 version = '3.2.0'
 
 [tool.poetry.dependencies]
-cachetools = '>=4.2.4'
+cachetools = '^4.2.4'
+pydantic = "^2.7.3"
 python = '>=3.8'
-requests = '>=2.26.0'
-six = '>=1.16.0'
+requests = '^2.26.0'
+six = '^1.16.0'
 
 [tool.poetry.dev-dependencies]
 pytest = '>=6.2.5'

@@ -59,7 +59,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         try:
             r = requests.post(self._build_base_url('', options), data=json.dumps(ips), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
-            return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(data), r.json()['results']))
+            return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(**data), r.json()['results']))
         except requests.HTTPError:
             raise ApiError(r.json())
         except Exception as e:
@@ -72,7 +72,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         try:
             r = requests.get(self._build_base_url(ip, options), headers=self._headers(), timeout=self._config.timeout)
             r.raise_for_status()
-            return IpInfo(r.json())
+            return IpInfo(**r.json())
         except requests.HTTPError:
             raise ApiError(r.json())
         except Exception as e:

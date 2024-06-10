@@ -36,7 +36,8 @@ class TestIpregistryClient(unittest.TestCase):
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
         response = client.lookup('8.8.8.8')
         self.assertIsNotNone(response.ip)
-        self.assertIsNotNone(response.company['domain'])
+        self.assertIsNotNone(response.company.domain)
+        self.assertEqual('US', response.location.country.code)
 
     def test_simple_lookup_in_memory_cache(self):
         """
@@ -46,7 +47,7 @@ class TestIpregistryClient(unittest.TestCase):
         response = client.lookup('8.8.8.8')
         response = client.lookup('8.8.8.8')
         self.assertIsNotNone(response.ip)
-        self.assertIsNotNone(response.company['domain'])
+        self.assertIsNotNone(response.company.domain)
 
 
 if __name__ == '__main__':
