@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- Introduce a data model for responses to enable field value access using dot notation and ensure code autocompletion functionality.
+- Require Python 3.8+.
+- Introduce data model for responses to enable field value access using dot notation and ensure code autocompletion functionality.
 - Rename all function and variable names to adhere to snake_case convention.
 - Rename _IpregistryConfig_ option `apiUrl` to `baseUrl`.
 
