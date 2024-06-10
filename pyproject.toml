@@ -21,10 +21,14 @@ repository = 'https://github.com/ipregistry/ipregistry-python'
 version = '3.2.0'
 
 [tool.poetry.dependencies]
-cachetools = '^4.2.4'
-python = '>=3.6,<4.0'
-requests = '^2.26.0'
-six = '^1.16.0'
+cachetools = '>=4.2.4'
+python = '>=3.8'
+requests = '>=2.26.0'
+six = '>=1.16.0'
 
 [tool.poetry.dev-dependencies]
-pytest = '^6.2.5'
+pytest = '>=6.2.5'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
