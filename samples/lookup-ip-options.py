@@ -14,12 +14,13 @@
     limitations under the License.
 """
 
-from ipregistry import ApiError, ClientError, IpregistryClient, NoCache
+from ipregistry import ApiError, ClientError, IpregistryClient
 
 try:
     apiKey = "tryout"
-    client = IpregistryClient(apiKey, cache=NoCache())
-    ipInfo = client.lookup_ip("54.85.132.205")
+    client = IpregistryClient(apiKey)
+    response = client.lookup_ip("54.85.132.205", hostname=True, fields="location.country")
+    ipInfo = response.data
     print(ipInfo)
 except ApiError as e:
     print("API error", e)

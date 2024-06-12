@@ -14,18 +14,14 @@
     limitations under the License.
 """
 
-from ipregistry import ApiError, ClientError, IpInfo, IpregistryClient, LookupError
+from ipregistry import ApiError, ClientError, IpregistryClient, NoCache
 
 try:
     apiKey = "tryout"
-    client = IpregistryClient(apiKey)
-    ipInfoList = client.batch_lookup_ips(["73.2.2.2", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
-
-    for lookupResult in ipInfoList:
-        if isinstance(lookupResult, IpInfo):
-            print("IpInfo", lookupResult)
-        else:
-            print("LookupError", lookupResult)
+    client = IpregistryClient(apiKey, cache=NoCache())
+    response = client.lookup_ip("54.85.132.205")
+    ipInfo = response.data
+    print(ipInfo)
 except ApiError as e:
     print("API error", e)
 except ClientError as e:
