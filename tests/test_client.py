@@ -68,9 +68,18 @@ class TestIpregistryClient(unittest.TestCase):
         batch_ips_response2 = client.batch_lookup_ips(['1.1.1.1', '1.1.1.3'])
         self.assertEqual(0, batch_ips_response2.credits.consumed)
 
+    def test_origin_lookup_ip(self):
+        """
+        Test that a simple origin IP lookup returns data
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.lookup_ip()
+        self.assertIsNotNone(response.data.ip)
+        self.assertIsNotNone(response.data.user_agent)
+
     def test_lookup_ip(self):
         """
-        Test that a simple lookup returns data
+        Test that a simple IP lookup returns data
         """
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
         response = client.lookup_ip('8.8.8.8')

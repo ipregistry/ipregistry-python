@@ -13,8 +13,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 """
-
 from .cache import IpregistryCache, NoCache
+from .json import IpInfo, RequesterIpInfo
 from .model import LookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
@@ -72,7 +72,7 @@ class IpregistryClient:
         return response
 
     def lookup_ip(self, ip='', **options):
-        if isinstance(ip, str) and len(ip) > 0:
+        if isinstance(ip, str):
             return self.__lookup_ip(ip, options)
         else:
             raise ValueError("Invalid value for 'ip' parameter: " + ip)
@@ -86,7 +86,8 @@ class IpregistryClient:
 
         if cache_value is None:
             response = self._requestHandler.lookup_ip(ip, options)
-            self._cache.put(cache_key, response.data)
+            if isinstance(response.data, IpInfo):
+                self._cache.put(cache_key, response.data)
             return response
 
         return ApiResponse(

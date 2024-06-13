@@ -23,7 +23,8 @@ from typing import Union
 import requests
 
 from .__init__ import __version__
-from .model import ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, ClientError, IpInfo, LookupError
+from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, ClientError, IpInfo,
+                    LookupError, RequesterIpInfo)
 
 
 class IpregistryRequestHandler(ABC):
@@ -88,7 +89,11 @@ class DefaultRequestHandler(IpregistryRequestHandler):
             response.raise_for_status()
             json_response = response.json()
 
-            return self.build_api_response(response, IpInfo(**json_response))
+            return self.build_api_response(
+                response,
+                RequesterIpInfo(**json_response) if ip == ''
+                else IpInfo(**json_response)
+            )
         except requests.HTTPError:
             self.__create_api_error(response)
         except Exception as err:
@@ -112,7 +117,6 @@ class DefaultRequestHandler(IpregistryRequestHandler):
                 ipregistry_credits_remaining,
             ),
             data,
-            None if throttling_limit is None and throttling_remaining is None and throttling_reset is None else
             ApiResponseThrottling(
                 throttling_limit,
                 throttling_remaining,
