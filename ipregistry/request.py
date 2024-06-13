@@ -14,14 +14,16 @@
     limitations under the License.
 """
 
-from abc import ABC, abstractmethod
 import json
-import requests
 import sys
 import urllib.parse
+from abc import ABC, abstractmethod
+from typing import Union
+
+import requests
 
 from .__init__ import __version__
-from .model import ApiError, ClientError, IpInfo
+from .model import ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, ClientError, IpInfo, LookupError
 
 
 class IpregistryRequestHandler(ABC):
@@ -53,27 +55,85 @@ class IpregistryRequestHandler(ABC):
 
 class DefaultRequestHandler(IpregistryRequestHandler):
     def batch_lookup_ips(self, ips, options):
+        response = None
         try:
-            r = requests.post(self._build_base_url('', options), data=json.dumps(ips), headers=self.__headers(), timeout=self._config.timeout)
-            r.raise_for_status()
-            return list(map(lambda data: LookupError(data) if 'code' in data else IpInfo(**data), r.json()['results']))
+            response = requests.post(
+                self._build_base_url('', options),
+                data=json.dumps(ips),
+                headers=self.__headers(),
+                timeout=self._config.timeout
+            )
+            response.raise_for_status()
+            results = response.json().get('results', [])
+
+            parsed_results = [
+                LookupError(data) if 'code' in data else IpInfo(**data)
+                for data in results
+            ]
+
+            return self.build_api_response(response, parsed_results)
         except requests.HTTPError:
-            raise ApiError(r.json())
+            self.__create_api_error(response)
         except Exception as e:
             raise ClientError(e)
 
     def lookup_ip(self, ip, options):
+        response = None
         try:
-            r = requests.get(self._build_base_url(ip, options), headers=self.__headers(), timeout=self._config.timeout)
-            r.raise_for_status()
-            return IpInfo(**r.json())
+            response = requests.get(
+                self._build_base_url(ip, options),
+                headers=self.__headers(),
+                timeout=self._config.timeout
+            )
+            response.raise_for_status()
+            json_response = response.json()
+
+            return self.build_api_response(response, IpInfo(**json_response))
         except requests.HTTPError:
-            raise ApiError(r.json())
-        except Exception as e:
-            raise ClientError(e)
+            self.__create_api_error(response)
+        except Exception as err:
+            raise ClientError(err)
 
     def origin_lookup_ip(self, options):
         return self.lookup_ip('', options)
+
+    @staticmethod
+    def build_api_response(response, data):
+        throttling_limit = DefaultRequestHandler.__convert_to_int(response.headers.get('x-rate-limit-limit'))
+        throttling_remaining = DefaultRequestHandler.__convert_to_int(response.headers.get('x-rate-limit-remaining'))
+        throttling_reset = DefaultRequestHandler.__convert_to_int(response.headers.get('x-rate-limit-reset'))
+
+        ipregistry_credits_consumed = DefaultRequestHandler.__convert_to_int(response.headers.get('ipregistry-credits-consumed'))
+        ipregistry_credits_remaining = DefaultRequestHandler.__convert_to_int(response.headers.get('ipregistry-credits-remaining'))
+
+        return ApiResponse(
+            ApiResponseCredits(
+                ipregistry_credits_consumed,
+                ipregistry_credits_remaining,
+            ),
+            data,
+            None if throttling_limit is None and throttling_remaining is None and throttling_reset is None else
+            ApiResponseThrottling(
+                throttling_limit,
+                throttling_remaining,
+                throttling_reset
+            )
+        )
+
+    @staticmethod
+    def __convert_to_int(value: str) -> Union[int, None]:
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None
+
+    @staticmethod
+    def __create_api_error(response):
+        if response is not None:
+            json_response = response.json()
+            raise ApiError(json_response['code'], json_response['message'], json_response['resolution'])
+        else:
+            raise ClientError("HTTP Error occurred, but no response was received.")
 
     @staticmethod
     def __headers():

@@ -15,7 +15,7 @@
 """
 
 from .cache import IpregistryCache, NoCache
-from .model import LookupError
+from .model import LookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 
@@ -30,7 +30,7 @@ class IpregistryClient:
         if not isinstance(self._requestHandler, IpregistryRequestHandler):
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
 
-    def batch_lookup_ips(self, ips, options):
+    def batch_lookup_ips(self, ips, **options):
         sparse_cache = [None] * len(ips)
         cache_misses = []
 
@@ -44,21 +44,32 @@ class IpregistryClient:
                 sparse_cache[i] = cache_value
 
         result = [None] * len(ips)
-        fresh_ip_info = self._requestHandler.batch_lookup_ips(cache_misses, options)
+        if len(cache_misses) > 0:
+            response = self._requestHandler.batch_lookup_ips(cache_misses, options)
+        else:
+            response = ApiResponse(
+                ApiResponseCredits(),
+                [],
+                ApiResponseThrottling()
+            )
+
+        fresh_ip_info = response.data
         j = 0
         k = 0
 
-        for cachedIpInfo in sparse_cache:
-            if cachedIpInfo is None:
+        for cached_ip_info in sparse_cache:
+            if cached_ip_info is None:
                 if not isinstance(fresh_ip_info[k], LookupError):
                     self._cache.put(self.__build_cache_key(ips[j], options), fresh_ip_info[k])
                 result[j] = fresh_ip_info[k]
                 k += 1
             else:
-                result[j] = cachedIpInfo
+                result[j] = cached_ip_info
             j += 1
 
-        return result
+        response.data = result
+
+        return response
 
     def lookup_ip(self, ip='', **options):
         if isinstance(ip, str) and len(ip) > 0:
@@ -74,10 +85,15 @@ class IpregistryClient:
         cache_value = self._cache.get(cache_key)
 
         if cache_value is None:
-            cache_value = self._requestHandler.lookup_ip(ip, options)
-            self._cache.put(cache_key, cache_value)
+            response = self._requestHandler.lookup_ip(ip, options)
+            self._cache.put(cache_key, response.data)
+            return response
 
-        return cache_value
+        return ApiResponse(
+            ApiResponseCredits(),
+            cache_value,
+            ApiResponseThrottling()
+        )
 
     @staticmethod
     def __build_cache_key(ip, options):
