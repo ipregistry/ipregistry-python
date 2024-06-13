@@ -30,7 +30,16 @@ from ipregistry import IpregistryClient
 
 client = IpregistryClient("YOUR_API_KEY")
 response = client.lookup_ip("54.85.132.205")
-print(response.data)
+
+# Printing whole response
+print(response)
+
+# Retrieving a specific field
+country_code = response.data.location.country.code
+
+# Getting number of credits consumed or remaining
+credits_consumed = response.credits.consumed
+credits_remaining = response.credits.remaining
 ```
 
 #### Batch IP Lookup
