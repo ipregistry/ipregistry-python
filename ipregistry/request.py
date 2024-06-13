@@ -43,7 +43,7 @@ class IpregistryRequestHandler(ABC):
         pass
 
     def _build_base_url(self, ip, options):
-        result = self._config.base_url + "/" + ip + "?key=" + self._config.api_key
+        result = self._config.base_url + "/" + ip
 
         for key, value in options.items():
             if isinstance(value, bool):
@@ -135,9 +135,9 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         else:
             raise ClientError("HTTP Error occurred, but no response was received.")
 
-    @staticmethod
-    def __headers():
+    def __headers(self):
         return {
+            "authorization": "ApiKey " + self._config.api_key,
             "content-type": "application/json",
             "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __version__
         }
