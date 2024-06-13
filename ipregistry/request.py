@@ -13,7 +13,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 """
-
+import importlib
 import json
 import sys
 import urllib.parse
@@ -22,7 +22,6 @@ from typing import Union
 
 import requests
 
-from .__init__ import __version__
 from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, AutonomousSystem,
                     ClientError, IpInfo, LookupError, RequesterAutonomousSystem, RequesterIpInfo,
                     RequesterUserAgent, UserAgent)
@@ -248,8 +247,15 @@ class DefaultRequestHandler(IpregistryRequestHandler):
             raise ClientError("HTTP Error occurred, but no response was received.")
 
     def __headers(self):
+        python_version = sys.version.split()[0]
+        lib_version = importlib.metadata.version('ipregistry')
         return {
             "authorization": "ApiKey " + self._config.api_key,
             "content-type": "application/json",
-            "user-agent": "Ipregistry/Python" + str(sys.version_info[0]) + "/" + __version__
+            "user-agent":
+                "Ipregistry/" +
+                lib_version +
+                " (Library; Python/" +
+                python_version +
+                "; +https://github.com/ipregistry/ipregistry-python)"
         }
