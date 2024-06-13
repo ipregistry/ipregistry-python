@@ -14,7 +14,7 @@
     limitations under the License.
 """
 from .cache import IpregistryCache, NoCache
-from .json import IpInfo, RequesterIpInfo
+from .json import AutonomousSystem, IpInfo
 from .model import LookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
@@ -29,6 +29,9 @@ class IpregistryClient:
             raise ValueError("Given cache instance is not of type IpregistryCache")
         if not isinstance(self._requestHandler, IpregistryRequestHandler):
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
+
+    def batch_lookup_asns(self, ips, **options):
+        return self.batch_request(ips, self._requestHandler.batch_lookup_asns, **options)
 
     def batch_lookup_ips(self, ips, **options):
         return self.batch_request(ips, self._requestHandler.batch_lookup_ips, **options)
@@ -77,11 +80,17 @@ class IpregistryClient:
 
         return response
 
-    def lookup_ip(self, ip='', **options):
+    def lookup_asn(self, asn, **options):
+        return self.__lookup_asn(asn, options)
+
+    def lookup_ip(self, ip, **options):
         if isinstance(ip, str):
             return self.__lookup_ip(ip, options)
         else:
             raise ValueError("Invalid value for 'ip' parameter: " + ip)
+
+    def origin_lookup_asn(self, **options):
+        return self.__lookup_asn('AS', options)
 
     def origin_lookup_ip(self, **options):
         return self.__lookup_ip('', options)
@@ -89,13 +98,22 @@ class IpregistryClient:
     def origin_parse_user_agent(self, **options):
         return self._requestHandler.origin_parse_user_agent(options)
 
+    def __lookup_asn(self, asn, options):
+        return self.__lookup(
+            'AS' + str(asn) if IpregistryClient.__is_number(asn) else 'AS',
+            options, self._requestHandler.lookup_asn,
+            AutonomousSystem)
+
     def __lookup_ip(self, ip, options):
-        cache_key = self.__build_cache_key(ip, options)
+        return self.__lookup(ip, options, self._requestHandler.lookup_ip, IpInfo)
+
+    def __lookup(self, key, options, lookup_func, response_type):
+        cache_key = self.__build_cache_key(key, options)
         cache_value = self._cache.get(cache_key)
 
         if cache_value is None:
-            response = self._requestHandler.lookup_ip(ip, options)
-            if isinstance(response.data, IpInfo):
+            response = lookup_func(key, options)
+            if isinstance(response.data, response_type):
                 self._cache.put(cache_key, response.data)
             return response
 
@@ -124,6 +142,15 @@ class IpregistryClient:
     @staticmethod
     def __is_api_error(data):
         return 'code' in data
+
+    @staticmethod
+    def __is_number(value):
+        try:
+            # Try converting the value to a float
+            float(value)
+            return True
+        except ValueError:
+            return False
 
 
 class IpregistryConfig:

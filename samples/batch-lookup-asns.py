@@ -14,17 +14,17 @@
     limitations under the License.
 """
 
-from ipregistry import ApiError, ClientError, IpInfo, IpregistryClient, LookupError
+from ipregistry import ApiError, AutonomousSystem, ClientError, IpregistryClient
 
 try:
     api_key = "tryout"
     client = IpregistryClient(api_key)
-    response = client.batch_lookup_ips(["73.2.2.2", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
+    response = client.batch_lookup_asns([42, 4441, 51933])
     data_list = response.data
 
     for entry in data_list:
-        if isinstance(entry, IpInfo):
-            print("IpInfo", entry)
+        if isinstance(entry, AutonomousSystem):
+            print("AutonomousSystem", entry)
         else:
             print("LookupError", entry)
 except ApiError as e:

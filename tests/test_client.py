@@ -17,12 +17,26 @@
 import os
 import unittest
 
-from ipregistry import ApiError, IpInfo, LookupError, ClientError, UserAgent
+from ipregistry import ApiError, AutonomousSystem, IpInfo, LookupError, ClientError, UserAgent
 from ipregistry.cache import InMemoryCache, NoCache
 from ipregistry.core import IpregistryClient, IpregistryConfig
 
 
 class TestIpregistryClient(unittest.TestCase):
+
+    def test_batch_lookup_asns(self):
+        """
+        Test batch asns lookup with valid and invalid inputs
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.batch_lookup_asns([33, 'invalid', -1])
+        print(response)
+        self.assertEqual(3, len(response.data))
+        self.assertEqual(True, isinstance(response.data[0], AutonomousSystem))
+        self.assertEqual(True, isinstance(response.data[1], LookupError))
+        self.assertEqual('INVALID_ASN', response.data[1].code)
+        self.assertEqual(True, isinstance(response.data[2], LookupError))
+        self.assertEqual('INVALID_ASN', response.data[2].code)
 
     def test_batch_lookup_ips(self):
         """
@@ -83,6 +97,16 @@ class TestIpregistryClient(unittest.TestCase):
         batch_ips_response2 = client.batch_lookup_ips(['1.1.1.1', '1.1.1.3'])
         self.assertEqual(0, batch_ips_response2.credits.consumed)
 
+    def test_lookup_asn(self):
+        """
+        Test Autonomous System data lookup by ASN
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.lookup_asn(400923)
+        self.assertEqual(400923, response.data.asn)
+        self.assertEqual(1, response.credits.consumed)
+        self.assertIsNotNone(response.data.relationships)
+
     def test_lookup_ip(self):
         """
         Test that a simple IP lookup returns data
@@ -100,7 +124,6 @@ class TestIpregistryClient(unittest.TestCase):
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
         with self.assertRaises(ApiError) as context:
             response = client.lookup_ip('invalid')
-        print("test", context.exception)
         self.assertEqual('INVALID_IP_ADDRESS', context.exception.code)
 
     def test_lookup_ip_cache(self):
@@ -122,12 +145,22 @@ class TestIpregistryClient(unittest.TestCase):
         with self.assertRaises(ClientError):
             client.lookup_ip('1.1.1.1')
 
+    def test_origin_asn(self):
+        """
+        Test origin Autonomous System data lookup
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.origin_lookup_asn()
+        self.assertIsNotNone(response.data.asn)
+        self.assertEqual(1, response.credits.consumed)
+        self.assertIsNotNone(response.data.relationships)
+
     def test_origin_lookup_ip(self):
         """
         Test that a simple origin IP lookup returns data
         """
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
-        response = client.lookup_ip()
+        response = client.origin_lookup_ip()
         self.assertIsNotNone(response.data.ip)
         self.assertIsNotNone(response.data.user_agent)
 

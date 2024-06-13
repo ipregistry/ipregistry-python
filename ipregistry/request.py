@@ -23,8 +23,9 @@ from typing import Union
 import requests
 
 from .__init__ import __version__
-from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, ClientError, IpInfo,
-                    LookupError, RequesterIpInfo, RequesterUserAgent, UserAgent)
+from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, AutonomousSystem,
+                    ClientError, IpInfo, LookupError, RequesterAutonomousSystem, RequesterIpInfo,
+                    RequesterUserAgent, UserAgent)
 
 
 class IpregistryRequestHandler(ABC):
@@ -32,11 +33,19 @@ class IpregistryRequestHandler(ABC):
         self._config = config
 
     @abstractmethod
+    def batch_lookup_asns(self, ips, options):
+        pass
+
+    @abstractmethod
     def batch_lookup_ips(self, ips, options):
         pass
 
     @abstractmethod
     def batch_parse_user_agents(self, user_agents, options):
+        pass
+
+    @abstractmethod
+    def lookup_asn(self, asn, options):
         pass
 
     @abstractmethod
@@ -65,6 +74,29 @@ class IpregistryRequestHandler(ABC):
 
 
 class DefaultRequestHandler(IpregistryRequestHandler):
+    def batch_lookup_asns(self, asns, options):
+        response = None
+        try:
+            response = requests.post(
+                self._build_base_url('', options),
+                data=json.dumps(list(map(lambda asn: "AS" + str(asn), asns))),
+                headers=self.__headers(),
+                timeout=self._config.timeout
+            )
+            response.raise_for_status()
+            results = response.json().get('results', [])
+
+            parsed_results = [
+                LookupError(data) if 'code' in data else AutonomousSystem(**data)
+                for data in results
+            ]
+
+            return self.build_api_response(response, parsed_results)
+        except requests.HTTPError:
+            self.__create_api_error(response)
+        except Exception as e:
+            raise ClientError(e)
+
     def batch_lookup_ips(self, ips, options):
         response = None
         try:
@@ -110,6 +142,27 @@ class DefaultRequestHandler(IpregistryRequestHandler):
             self.__create_api_error(response)
         except Exception as e:
             raise ClientError(e)
+
+    def lookup_asn(self, asn, options):
+        response = None
+        try:
+            response = requests.get(
+                self._build_base_url(asn, options),
+                headers=self.__headers(),
+                timeout=self._config.timeout
+            )
+            response.raise_for_status()
+            json_response = response.json()
+
+            return self.build_api_response(
+                response,
+                RequesterAutonomousSystem(**json_response) if asn == 'AS'
+                else AutonomousSystem(**json_response)
+            )
+        except requests.HTTPError:
+            self.__create_api_error(response)
+        except Exception as err:
+            raise ClientError(err)
 
     def lookup_ip(self, ip, options):
         response = None

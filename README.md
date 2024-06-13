@@ -42,6 +42,18 @@ credits_consumed = response.credits.consumed
 credits_remaining = response.credits.remaining
 ```
 
+#### Single ASN Lookup
+
+```python
+from ipregistry import IpregistryClient
+
+client = IpregistryClient("YOUR_API_KEY")
+response = client.lookup_asn(42)
+print(response.credits.consumed)
+print(response.data.prefixes)
+print(response.data.relationships)
+```
+
 #### Batch IP Lookup
 
 ```python
