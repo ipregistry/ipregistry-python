@@ -46,10 +46,12 @@ class IpregistryRequestHandler(ABC):
     def _build_base_url(self, ip, options):
         result = self._config.base_url + "/" + ip
 
+        i = 0
         for key, value in options.items():
             if isinstance(value, bool):
                 value = 'true' if value is True else 'false'
-            result += "&" + key + "=" + urllib.parse.quote(value)
+            result += ("?" if i == 0 else "&") + key + "=" + urllib.parse.quote(value)
+            i += 1
 
         return result
 
@@ -108,8 +110,10 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         throttling_remaining = DefaultRequestHandler.__convert_to_int(response.headers.get('x-rate-limit-remaining'))
         throttling_reset = DefaultRequestHandler.__convert_to_int(response.headers.get('x-rate-limit-reset'))
 
-        ipregistry_credits_consumed = DefaultRequestHandler.__convert_to_int(response.headers.get('ipregistry-credits-consumed'))
-        ipregistry_credits_remaining = DefaultRequestHandler.__convert_to_int(response.headers.get('ipregistry-credits-remaining'))
+        ipregistry_credits_consumed = DefaultRequestHandler.__convert_to_int(
+            response.headers.get('ipregistry-credits-consumed'))
+        ipregistry_credits_remaining = DefaultRequestHandler.__convert_to_int(
+            response.headers.get('ipregistry-credits-remaining'))
 
         return ApiResponse(
             ApiResponseCredits(
