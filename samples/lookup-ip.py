@@ -17,11 +17,12 @@
 from ipregistry import ApiError, ClientError, IpregistryClient
 
 try:
-    apiKey = "tryout"
-    client = IpregistryClient(apiKey)
+    api_key = "tryout"
+    client = IpregistryClient(api_key)
     response = client.lookup_ip("54.85.132.205")
-    ipInfo = response.data
-    print(ipInfo)
+    print(response.credits.consumed)
+    print(response.data.location.country.code)
+    print(response.data.location.country.city)
 except ApiError as e:
     print("API error", e)
 except ClientError as e:

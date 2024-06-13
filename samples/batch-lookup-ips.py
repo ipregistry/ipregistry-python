@@ -17,16 +17,16 @@
 from ipregistry import ApiError, ClientError, IpInfo, IpregistryClient, LookupError
 
 try:
-    apiKey = "tryout"
-    client = IpregistryClient(apiKey)
+    api_key = "tryout"
+    client = IpregistryClient(api_key)
     response = client.batch_lookup_ips(["73.2.2.2", "8.8.8.8", "2001:67c:2e8:22::c100:68b"])
-    ipInfoList = response.data
+    ip_info_list = response.data
 
-    for lookupResult in ipInfoList:
-        if isinstance(lookupResult, IpInfo):
-            print("IpInfo", lookupResult)
+    for lookup_result in ip_info_list:
+        if isinstance(lookup_result, IpInfo):
+            print("IpInfo", lookup_result)
         else:
-            print("LookupError", lookupResult)
+            print("LookupError", lookup_result)
 except ApiError as e:
     print("API error", e)
 except ClientError as e:
