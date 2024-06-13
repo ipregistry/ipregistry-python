@@ -31,21 +31,27 @@ class IpregistryClient:
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
 
     def batch_lookup_ips(self, ips, **options):
-        sparse_cache = [None] * len(ips)
+        return self.batch_request(ips, self._requestHandler.batch_lookup_ips, **options)
+
+    def batch_parse_user_agents(self, user_agents, **options):
+        return self.batch_request(user_agents, self._requestHandler.batch_parse_user_agents, **options)
+
+    def batch_request(self, items, request_handler_func, **options):
+        sparse_cache = [None] * len(items)
         cache_misses = []
 
-        for i in range(0, len(ips)):
-            ip = ips[i]
-            cache_key = self.__build_cache_key(ip, options)
+        for i in range(len(items)):
+            item = items[i]
+            cache_key = self.__build_cache_key(item, options)
             cache_value = self._cache.get(cache_key)
             if cache_value is None:
-                cache_misses.append(ip)
+                cache_misses.append(item)
             else:
                 sparse_cache[i] = cache_value
 
-        result = [None] * len(ips)
+        result = [None] * len(items)
         if len(cache_misses) > 0:
-            response = self._requestHandler.batch_lookup_ips(cache_misses, options)
+            response = request_handler_func(cache_misses, options)
         else:
             response = ApiResponse(
                 ApiResponseCredits(),
@@ -53,18 +59,18 @@ class IpregistryClient:
                 ApiResponseThrottling()
             )
 
-        fresh_ip_info = response.data
+        fresh_item_info = response.data
         j = 0
         k = 0
 
-        for cached_ip_info in sparse_cache:
-            if cached_ip_info is None:
-                if not isinstance(fresh_ip_info[k], LookupError):
-                    self._cache.put(self.__build_cache_key(ips[j], options), fresh_ip_info[k])
-                result[j] = fresh_ip_info[k]
+        for cached_item_info in sparse_cache:
+            if cached_item_info is None:
+                if not isinstance(fresh_item_info[k], LookupError):
+                    self._cache.put(self.__build_cache_key(items[j], options), fresh_item_info[k])
+                result[j] = fresh_item_info[k]
                 k += 1
             else:
-                result[j] = cached_ip_info
+                result[j] = cached_item_info
             j += 1
 
         response.data = result
@@ -79,6 +85,9 @@ class IpregistryClient:
 
     def origin_lookup_ip(self, **options):
         return self.__lookup_ip('', options)
+
+    def origin_parse_user_agent(self, **options):
+        return self._requestHandler.origin_parse_user_agent(options)
 
     def __lookup_ip(self, ip, options):
         cache_key = self.__build_cache_key(ip, options)
@@ -96,9 +105,14 @@ class IpregistryClient:
             ApiResponseThrottling()
         )
 
+    def parse_user_agent(self, user_agent, **options):
+        response = self.batch_parse_user_agents([user_agent], **options)
+        response.data = response.data[0]
+        return response
+
     @staticmethod
-    def __build_cache_key(ip, options):
-        result = ip
+    def __build_cache_key(key, options):
+        result = key
 
         for key, value in options.items():
             if isinstance(value, bool):

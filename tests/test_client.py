@@ -17,7 +17,7 @@
 import os
 import unittest
 
-from ipregistry import ApiError, IpInfo, LookupError, ClientError
+from ipregistry import ApiError, IpInfo, LookupError, ClientError, UserAgent
 from ipregistry.cache import InMemoryCache, NoCache
 from ipregistry.core import IpregistryClient, IpregistryConfig
 
@@ -35,6 +35,21 @@ class TestIpregistryClient(unittest.TestCase):
         self.assertEqual(True, isinstance(response.data[1], LookupError))
         self.assertEqual('INVALID_IP_ADDRESS', response.data[1].code)
         self.assertEqual(True, isinstance(response.data[2], IpInfo))
+
+    def test_batch_parse_user_agents(self):
+        """
+        Test batch parse user agents
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.batch_parse_user_agents([
+            'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 13; SM-S901U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+            'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36'
+        ])
+
+        self.assertEqual(4, len(response.data))
+        self.assertEqual(5, response.credits.consumed)
 
     def test_client_cache_default(self):
         """
@@ -68,15 +83,6 @@ class TestIpregistryClient(unittest.TestCase):
         batch_ips_response2 = client.batch_lookup_ips(['1.1.1.1', '1.1.1.3'])
         self.assertEqual(0, batch_ips_response2.credits.consumed)
 
-    def test_origin_lookup_ip(self):
-        """
-        Test that a simple origin IP lookup returns data
-        """
-        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
-        response = client.lookup_ip()
-        self.assertIsNotNone(response.data.ip)
-        self.assertIsNotNone(response.data.user_agent)
-
     def test_lookup_ip(self):
         """
         Test that a simple IP lookup returns data
@@ -107,6 +113,44 @@ class TestIpregistryClient(unittest.TestCase):
         self.assertIsNotNone(response.data.ip)
         self.assertIsNotNone(response.data.company.domain)
 
+    def test_lookup_timeout(self):
+        """
+        Test a client error is raised upon connection timeout
+        """
+        client = IpregistryClient(IpregistryConfig(os.getenv('IPREGISTRY_API_KEY'), "https://api.ipregistry.co",
+                                                   0.0001))
+        with self.assertRaises(ClientError):
+            client.lookup_ip('1.1.1.1')
+
+    def test_origin_lookup_ip(self):
+        """
+        Test that a simple origin IP lookup returns data
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.lookup_ip()
+        self.assertIsNotNone(response.data.ip)
+        self.assertIsNotNone(response.data.user_agent)
+
+    def test_origin_parse_user_agent(self):
+        """
+        Test origin parse user agent
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.origin_parse_user_agent()
+
+        self.assertIsInstance(response.data, UserAgent)
+        self.assertEqual(1, response.credits.consumed)
+
+    def test_parse_user_agent(self):
+        """
+        Test user agent parsing
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.parse_user_agent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+
+        self.assertIsInstance(response.data, UserAgent)
+        self.assertEqual(1, response.credits.consumed)
+
     def test_response_metadata(self):
         """
         Test metadata returned for each successful response
@@ -120,15 +164,6 @@ class TestIpregistryClient(unittest.TestCase):
 
         self.assertIsNotNone(batch_ips_lookup_response.credits.remaining)
         self.assertIsNotNone(lookup_ip_response.credits.remaining)
-
-    def test_lookup_timeout(self):
-        """
-        Test a client error is raised upon connection timeout
-        """
-        client = IpregistryClient(IpregistryConfig(os.getenv('IPREGISTRY_API_KEY'), "https://api.ipregistry.co",
-                                                   0.0001))
-        with self.assertRaises(ClientError):
-            client.lookup_ip('1.1.1.1')
 
 
 if __name__ == '__main__':

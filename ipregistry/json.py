@@ -267,8 +267,10 @@ class IpInfo(BaseModel):
 class RequesterAutonomousSystem(AutonomousSystem):
     pass
 
-
 class RequesterIpInfo(IpInfo):
     user_agent: Optional[UserAgent] = None
 
     model_config = ConfigDict(extra='ignore')
+
+class RequesterUserAgent(UserAgent):
+    pass

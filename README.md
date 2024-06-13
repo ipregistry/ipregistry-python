@@ -63,6 +63,16 @@ response = client.origin_lookup_ip()
 print(response.data)
 ```
 
+#### User-Agent Parsing
+
+```python
+from ipregistry import IpregistryClient
+
+client = IpregistryClient("YOUR_API_KEY")
+response = client.parse_user_agent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+print(response.data)
+```
+
 More advanced examples are available in the [samples](https://github.com/ipregistry/ipregistry-python/tree/master/samples) 
 folder.
 
@@ -108,9 +118,9 @@ A manner to proceed is to identify bots using the `User-Agent` header.
 To ease this process, the library includes a utility method:
 
 ```python
-from ipregistry import UserAgent
+from ipregistry import UserAgents
 
-is_bot = UserAgent.is_bot('YOUR_USER_AGENT_HEADER_VALUE_HERE')
+is_bot = UserAgents.is_bot('YOUR_USER_AGENT_HEADER_VALUE_HERE')
 ```
 
 ## Other Libraries

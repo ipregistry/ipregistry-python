@@ -24,7 +24,7 @@ import requests
 
 from .__init__ import __version__
 from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, ClientError, IpInfo,
-                    LookupError, RequesterIpInfo)
+                    LookupError, RequesterIpInfo, RequesterUserAgent, UserAgent)
 
 
 class IpregistryRequestHandler(ABC):
@@ -36,6 +36,10 @@ class IpregistryRequestHandler(ABC):
         pass
 
     @abstractmethod
+    def batch_parse_user_agents(self, user_agents, options):
+        pass
+
+    @abstractmethod
     def lookup_ip(self, ip, options):
         pass
 
@@ -43,8 +47,12 @@ class IpregistryRequestHandler(ABC):
     def origin_lookup_ip(self, options):
         pass
 
-    def _build_base_url(self, ip, options):
-        result = self._config.base_url + "/" + ip
+    @abstractmethod
+    def origin_parse_user_agent(self, options):
+        pass
+
+    def _build_base_url(self, resource, options):
+        result = self._config.base_url + "/" + resource
 
         i = 0
         for key, value in options.items():
@@ -80,6 +88,29 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
+    def batch_parse_user_agents(self, user_agents, options):
+        response = None
+        try:
+            response = requests.post(
+                self._build_base_url('user_agent', options),
+                data=json.dumps(user_agents),
+                headers=self.__headers(),
+                timeout=self._config.timeout
+            )
+            response.raise_for_status()
+            results = response.json().get('results', [])
+
+            parsed_results = [
+                LookupError(data) if 'code' in data else UserAgent(**data)
+                for data in results
+            ]
+
+            return self.build_api_response(response, parsed_results)
+        except requests.HTTPError:
+            self.__create_api_error(response)
+        except Exception as e:
+            raise ClientError(e)
+
     def lookup_ip(self, ip, options):
         response = None
         try:
@@ -103,6 +134,26 @@ class DefaultRequestHandler(IpregistryRequestHandler):
 
     def origin_lookup_ip(self, options):
         return self.lookup_ip('', options)
+
+    def origin_parse_user_agent(self, options):
+        response = None
+        try:
+            response = requests.get(
+                self._build_base_url('user_agent', options),
+                headers=self.__headers(),
+                timeout=self._config.timeout
+            )
+            response.raise_for_status()
+            json_response = response.json()
+
+            return self.build_api_response(
+                response,
+                RequesterUserAgent(**json_response)
+            )
+        except requests.HTTPError:
+            self.__create_api_error(response)
+        except Exception as err:
+            raise ClientError(err)
 
     @staticmethod
     def build_api_response(response, data):

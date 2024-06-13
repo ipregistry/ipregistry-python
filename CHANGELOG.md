@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Require Python 3.8+.
+- Add new functions for user-agent header value parsing: `batch_parse_user_agents`, `parse_user_agent`. 
 - API key is passed as header value and no longer as query parameter.
 - Client library method are now wrapped in a new _ApiResponse_ object that includes a mean to retrieve metadata 
   about _credits_ and _throttling_ in addition to _data_.
