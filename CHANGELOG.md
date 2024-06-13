@@ -11,10 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API key is passed as header value and no longer as query parameter.
 - Client library method are now wrapped in a new _ApiResponse_ object that includes a mean to retrieve metadata 
   about _credits_ and _throttling_ in addition to _data_.
-- Replace the function named `lookup` by 3 new functions: `batch_lookup_ips`, `lookup_ip` and `origin_lookup_ip`.
 - Introduce data model for responses to enable field value access using dot notation and ensure code autocompletion functionality.
 - Rename all function and variable names to adhere to snake_case convention.
+- Replace the function named `lookup` by 3 new functions: `batch_lookup_ips`, `lookup_ip` and `origin_lookup_ip`.
 - Rename _IpregistryConfig_ option `apiUrl` to `baseUrl`.
+- Rename _UserAgent_ utility class to _UserAgents.
 
 ## [3.2.0] - 2021-11-09
 ### Changed

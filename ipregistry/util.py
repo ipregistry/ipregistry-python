@@ -15,7 +15,7 @@
 """
 
 
-class UserAgent:
+class UserAgents:
 
     @staticmethod
     def is_bot(header):

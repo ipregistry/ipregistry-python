@@ -16,7 +16,7 @@
 
 import unittest
 
-from ipregistry.util import UserAgent
+from ipregistry.util import UserAgents
 
 
 class TestIpregistryUserAgent(unittest.TestCase):
@@ -24,13 +24,15 @@ class TestIpregistryUserAgent(unittest.TestCase):
         """
         Test that isBot is False with standard Chrome User-Agent
         """
-        self.assertEqual(False, UserAgent.is_bot("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"))
+        self.assertEqual(False, UserAgents.is_bot("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ("
+                                                  "KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"))
 
     def test_isbot_chrome_true(self):
         """
         Test that isBot is True with Googlebot UserAgent
         """
-        self.assertEqual(True, UserAgent.is_bot("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"))
+        self.assertEqual(True, UserAgents.is_bot("Mozilla/5.0 (compatible; Googlebot/2.1; "
+                                                 "+http://www.google.com/bot.html)"))
 
 
 if __name__ == '__main__':
