@@ -18,6 +18,9 @@ import json
 import sys
 import urllib.parse
 from abc import ABC, abstractmethod
+
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+
 from typing import Union
 
 import requests
@@ -72,7 +75,21 @@ class IpregistryRequestHandler(ABC):
         return result
 
 
+def is_server_error(exception):
+    return isinstance(exception, ApiError) and (exception.code == 'INTERNAL')
+
+
+retry_on_server_error = retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=0.5, max=3),
+    retry=retry_if_exception(is_server_error),
+    reraise=True
+)
+
+
 class DefaultRequestHandler(IpregistryRequestHandler):
+
+    @retry_on_server_error
     def batch_lookup_asns(self, asns, options):
         response = None
         try:
@@ -96,6 +113,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
+    @retry_on_server_error
     def batch_lookup_ips(self, ips, options):
         response = None
         try:
@@ -119,6 +137,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
+    @retry_on_server_error
     def batch_parse_user_agents(self, user_agents, options):
         response = None
         try:
@@ -142,6 +161,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as e:
             raise ClientError(e)
 
+    @retry_on_server_error
     def lookup_asn(self, asn, options):
         response = None
         try:
@@ -163,6 +183,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as err:
             raise ClientError(err)
 
+    @retry_on_server_error
     def lookup_ip(self, ip, options):
         response = None
         try:
@@ -184,9 +205,11 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as err:
             raise ClientError(err)
 
+    @retry_on_server_error
     def origin_lookup_ip(self, options):
         return self.lookup_ip('', options)
 
+    @retry_on_server_error
     def origin_parse_user_agent(self, options):
         response = None
         try:
@@ -259,3 +282,4 @@ class DefaultRequestHandler(IpregistryRequestHandler):
                 python_version +
                 "; +https://github.com/ipregistry/ipregistry-python)"
         }
+
