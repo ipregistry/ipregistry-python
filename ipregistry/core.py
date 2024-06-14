@@ -169,6 +169,10 @@ class IpregistryConfig:
         self.base_url = base_url
         self.timeout = timeout
 
+    def with_eu_base_url(self):
+        self.base_url = 'https://eu.api.ipregistry.co'
+        return self
+
     def __str__(self):
         """
         Return a string representation of the IpregistryConfig instance.

@@ -117,6 +117,16 @@ class TestIpregistryClient(unittest.TestCase):
         self.assertIsNotNone(response.data.company.domain)
         self.assertEqual('US', response.data.location.country.code)
 
+    def test_lookup_ip_with_eu_base_url(self):
+        """
+        Test a simple IP lookup with the EU base URL
+        """
+        client = IpregistryClient(IpregistryConfig(os.getenv('IPREGISTRY_API_KEY')).with_eu_base_url())
+        response = client.lookup_ip('8.8.8.8')
+        self.assertIsNotNone(response.data.ip)
+        self.assertIsNotNone(response.data.company.domain)
+        self.assertEqual('US', response.data.location.country.code)
+
     def test_lookup_ip_invalid_input(self):
         """
         Test that an IP lookup with an invalid input fails with an ApiError
