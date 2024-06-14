@@ -154,7 +154,7 @@ class IpregistryClient:
 
 
 class IpregistryConfig:
-    def __init__(self, key, base_url="https://api.ipregistry.co", timeout=15):
+    def __init__(self, key, base_url="https://api.ipregistry.co", timeout=5):
         """
         Initialize the IpregistryConfig instance.
 
