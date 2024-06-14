@@ -116,15 +116,13 @@ client = IpregistryClient("YOUR_API_KEY", cache=NoCache())
 
 ### European Union Base URL
 
-With the ever-increasing concerns about data privacy and security, we recognize the importance of providing our European users with a dedicated API base URL:
+Using the EU base URL, your requests are handled by the closest cluster of nodes in the European Union:
 
 ```python
 from ipregistry import IpregistryClient, NoCache
 
 client = IpregistryClient(IpregistryConfig("YOUR_API_KEY").with_eu_base_url())
 ```
-
-Using this base URL your requests are handled by the closest cluster of nodes in the European Union.
 
 ### Errors
 
