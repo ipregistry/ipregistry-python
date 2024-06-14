@@ -18,7 +18,7 @@ name = 'ipregistry'
 license = 'Apache-2.0'
 readme = 'README.md'
 repository = 'https://github.com/ipregistry/ipregistry-python'
-version = '3.2.0'
+version = '4.0.0'
 
 [tool.poetry.dependencies]
 cachetools = '^5.3.3'
