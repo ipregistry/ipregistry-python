@@ -263,11 +263,20 @@ class DefaultRequestHandler(IpregistryRequestHandler):
 
     @staticmethod
     def __create_api_error(response):
-        if response is not None:
-            json_response = response.json()
-            raise ApiError(json_response['code'], json_response['message'], json_response['resolution'])
-        else:
+        if response is None:
             raise ClientError("HTTP Error occurred, but no response was received.")
+
+        try:
+            json_response = response.json()
+            code = json_response['code']
+            message = json_response['message']
+            resolution = json_response.get('resolution')
+        except (ValueError, KeyError, TypeError):
+            raise ClientError(
+                "HTTP error {} with unexpected response body.".format(response.status_code)
+            )
+
+        raise ApiError(code, message, resolution)
 
     def __headers(self):
         python_version = sys.version.split()[0]
