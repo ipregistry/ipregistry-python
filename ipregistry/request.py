@@ -205,7 +205,6 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         except Exception as err:
             raise ClientError(err)
 
-    @retry_on_server_error
     def origin_lookup_ip(self, options):
         return self.lookup_ip('', options)
 

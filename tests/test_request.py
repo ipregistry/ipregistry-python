@@ -51,6 +51,14 @@ class TestIpregistryRequestHandler(unittest.TestCase):
             DefaultRequestHandler._DefaultRequestHandler__create_api_error(response)
         self.assertIn('502', str(context.exception))
 
+    def test_origin_lookup_ip_not_double_retried(self):
+        """
+        Test that origin_lookup_ip is not retried on top of lookup_ip,
+        which already retries server errors
+        """
+        self.assertTrue(hasattr(DefaultRequestHandler.lookup_ip, 'retry'))
+        self.assertFalse(hasattr(DefaultRequestHandler.origin_lookup_ip, 'retry'))
+
     def test_create_api_error_no_response(self):
         """
         Test that a missing response raises a ClientError
