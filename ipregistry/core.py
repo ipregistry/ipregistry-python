@@ -146,8 +146,7 @@ class IpregistryClient:
     @staticmethod
     def __is_number(value):
         try:
-            # Try converting the value to a float
-            float(value)
+            int(str(value))
             return True
         except ValueError:
             return False

@@ -145,6 +145,18 @@ class TestIpregistryClient(unittest.TestCase):
             client.lookup_ip(1234)
         self.assertIn('1234', str(context.exception))
 
+    def test_is_number_rejects_floats(self):
+        """
+        Test that ASN detection only accepts integers, so a float
+        input does not produce a request such as AS1.5
+        """
+        is_number = IpregistryClient._IpregistryClient__is_number
+        self.assertTrue(is_number(33))
+        self.assertTrue(is_number('33'))
+        self.assertFalse(is_number(1.5))
+        self.assertFalse(is_number('1.5'))
+        self.assertFalse(is_number('invalid'))
+
     def test_build_cache_key_option_value_types(self):
         """
         Test that cache key building handles boolean and non-string option values
