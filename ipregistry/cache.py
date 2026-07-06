@@ -43,7 +43,7 @@ class InMemoryCache(IpregistryCache):
     def get(self, key):
         try:
             return self._cache[key]
-        except:
+        except KeyError:
             return None
 
     def put(self, key, data):
@@ -53,8 +53,7 @@ class InMemoryCache(IpregistryCache):
         del self._cache[key]
 
     def invalidate_all(self):
-        for key in self._cache:
-            del self._cache[key]
+        self._cache.clear()
 
 
 class NoCache(IpregistryCache):
