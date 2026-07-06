@@ -85,11 +85,11 @@ class Company(BaseModel):
 
 
 class Connection(BaseModel):
-    asn: Optional[int]
-    domain: Optional[str]
-    organization: Optional[str]
-    route: Optional[str]
-    type: Optional[str]
+    asn: Optional[int] = None
+    domain: Optional[str] = None
+    organization: Optional[str] = None
+    route: Optional[str] = None
+    type: Optional[str] = None
 
     model_config = ConfigDict(extra='ignore')
 
@@ -102,8 +102,8 @@ class CurrencyFormatPrefixSuffix(BaseModel):
 
 
 class CurrencyFormat(BaseModel):
-    negative: CurrencyFormatPrefixSuffix
-    positive: CurrencyFormatPrefixSuffix
+    negative: Optional[CurrencyFormatPrefixSuffix] = None
+    positive: Optional[CurrencyFormatPrefixSuffix] = None
 
     model_config = ConfigDict(extra='ignore')
 
@@ -242,9 +242,9 @@ class UserAgent(BaseModel):
     type: Optional[str] = None
     version: Optional[str] = None
     version_major: Optional[str] = None
-    device: UserAgentDevice = None
-    engine: UserAgentEngine = None
-    os: UserAgentOperatingSystem = None
+    device: Optional[UserAgentDevice] = None
+    engine: Optional[UserAgentEngine] = None
+    os: Optional[UserAgentOperatingSystem] = None
 
     model_config = ConfigDict(extra='ignore')
 

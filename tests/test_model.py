@@ -16,10 +16,44 @@
 
 import unittest
 
+from ipregistry.json import Connection, Currency, CurrencyFormat, IpInfo, UserAgent
 from ipregistry.model import RequesterIpInfo
 
 
 class TestIpregistryModel(unittest.TestCase):
+    def test_connection_fields_optional(self):
+        """
+        Test that Connection validates when fields are missing,
+        e.g. when a fields filter excludes them from the response
+        """
+        connection = Connection()
+        self.assertIsNone(connection.asn)
+        self.assertIsNone(connection.domain)
+
+        info = IpInfo(ip='8.8.8.8', connection={'asn': 15169})
+        self.assertEqual(15169, info.connection.asn)
+
+    def test_currency_format_fields_optional(self):
+        """
+        Test that CurrencyFormat validates when negative/positive are missing
+        """
+        currency_format = CurrencyFormat()
+        self.assertIsNone(currency_format.negative)
+        self.assertIsNone(currency_format.positive)
+
+        currency = Currency(code='USD', format={})
+        self.assertEqual('USD', currency.code)
+
+    def test_user_agent_fields_optional(self):
+        """
+        Test that UserAgent validates when device, engine or os are missing
+        """
+        user_agent = UserAgent(name='Chrome')
+        self.assertEqual('Chrome', user_agent.name)
+        self.assertIsNone(user_agent.device)
+        self.assertIsNone(user_agent.engine)
+        self.assertIsNone(user_agent.os)
+
     def test_requester_ip_info_user_agent_optional(self):
         """
         Test that RequesterIpInfo validates when the user_agent field is
