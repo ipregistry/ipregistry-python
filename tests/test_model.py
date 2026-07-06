@@ -17,7 +17,7 @@
 import unittest
 
 from ipregistry.json import Connection, Currency, CurrencyFormat, IpInfo, UserAgent
-from ipregistry.model import RequesterIpInfo
+from ipregistry.model import ApiError, LookupError, RequesterIpInfo
 
 
 class TestIpregistryModel(unittest.TestCase):
@@ -62,6 +62,22 @@ class TestIpregistryModel(unittest.TestCase):
         info = RequesterIpInfo(ip='8.8.8.8')
         self.assertEqual('8.8.8.8', info.ip)
         self.assertIsNone(info.user_agent)
+
+
+    def test_api_error_str(self):
+        """
+        Test that str(ApiError) returns the error message
+        """
+        error = ApiError('INVALID_IP_ADDRESS', 'The IP address is invalid.', 'Check the input.')
+        self.assertEqual('The IP address is invalid.', str(error))
+
+    def test_lookup_error_str(self):
+        """
+        Test that str(LookupError) returns the error message
+        """
+        error = LookupError({'code': 'INVALID_ASN', 'message': 'The ASN is invalid.'})
+        self.assertEqual('The ASN is invalid.', str(error))
+        self.assertEqual('INVALID_ASN', error.code)
 
 
 if __name__ == '__main__':

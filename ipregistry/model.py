@@ -58,6 +58,7 @@ class IpregistryError(Exception):
 
 class ApiError(IpregistryError):
     def __init__(self, code: str, message: str, resolution: str):
+        super().__init__(message)
         self.code = code
         self.message = message
         self.resolution = resolution
