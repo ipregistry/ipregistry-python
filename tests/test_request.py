@@ -31,6 +31,14 @@ def build_response(status_code, content):
 
 
 class TestIpregistryRequestHandler(unittest.TestCase):
+    def test_build_base_url_option_value_types(self):
+        """
+        Test that URL building handles boolean and non-string option values
+        """
+        handler = DefaultRequestHandler(IpregistryConfig("tryout"))
+        url = handler._build_base_url('8.8.8.8', {'hostname': True, 'fields': 'location', 'n': 5})
+        self.assertEqual('https://api.ipregistry.co/8.8.8.8?hostname=true&fields=location&n=5', url)
+
     def test_create_api_error_json_response(self):
         """
         Test that a JSON error response raises an ApiError with its fields

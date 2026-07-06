@@ -135,7 +135,7 @@ class IpregistryClient:
         for key, value in options.items():
             if isinstance(value, bool):
                 value = 'true' if value is True else 'false'
-            result += ';' + key + '=' + value
+            result += ';' + key + '=' + str(value)
 
         return result
 

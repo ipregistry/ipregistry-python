@@ -69,7 +69,7 @@ class IpregistryRequestHandler(ABC):
         for key, value in options.items():
             if isinstance(value, bool):
                 value = 'true' if value is True else 'false'
-            result += ("?" if i == 0 else "&") + key + "=" + urllib.parse.quote(value)
+            result += ("?" if i == 0 else "&") + key + "=" + urllib.parse.quote(str(value))
             i += 1
 
         return result

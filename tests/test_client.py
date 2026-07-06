@@ -145,6 +145,13 @@ class TestIpregistryClient(unittest.TestCase):
             client.lookup_ip(1234)
         self.assertIn('1234', str(context.exception))
 
+    def test_build_cache_key_option_value_types(self):
+        """
+        Test that cache key building handles boolean and non-string option values
+        """
+        build_cache_key = IpregistryClient._IpregistryClient__build_cache_key
+        self.assertEqual('8.8.8.8;hostname=true;n=5', build_cache_key('8.8.8.8', {'hostname': True, 'n': 5}))
+
     def test_lookup_ip_cache(self):
         """
         Test consecutive lookup with in-memory cache
