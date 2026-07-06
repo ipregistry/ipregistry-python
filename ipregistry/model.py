@@ -52,10 +52,6 @@ class ApiResponse(Generic[T]):
         return f"{self.__class__.__name__}({fields})"
 
 
-class RequesterIpInfo(IpInfo):
-    user_agent: UserAgent
-
-
 class IpregistryError(Exception):
     pass
 
