@@ -162,7 +162,7 @@ class IpregistryConfig:
         base_url (str): The base URL for the Ipregistry API. Defaults to "https://api.ipregistry.co".
                         There also exists a European Union (EU) base URL "https://eu.api.ipregistry.co"
                         that can be used to ensure requests are handled by nodes hosted in the EU only.
-        timeout (int): The timeout duration (in seconds) for API requests. Defaults to 15 seconds.
+        timeout (int): The timeout duration (in seconds) for API requests. Defaults to 5 seconds.
         """
         self.api_key = key
         self.base_url = base_url
