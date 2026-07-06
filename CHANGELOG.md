@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Require Python 3.10+.
+- Update all dependencies to their latest versions.
+- Remove the redundant retry on `origin_lookup_ip` that could triple retry attempts.
+### Fixed
+- Fix nested model fields (`Connection`, `CurrencyFormat`, `UserAgent` device/engine/os, `RequesterIpInfo` user_agent)
+  raising a validation error when excluded from a response using the `fields` parameter.
+- Fix `str(ApiError)` returning a tuple representation instead of the error message.
+- Raise `ClientError` instead of leaking a `JSONDecodeError` when an error response has a non-JSON body.
+- Raise `ValueError` instead of `TypeError` when `lookup_ip` is called with a non-string input.
+- Support boolean and numeric option values when building request URLs and cache keys.
+- Reject float inputs when detecting ASN values in `lookup_asn`.
 
 ## [4.0.0] - 2024-06-14
 ### Changed
