@@ -87,7 +87,7 @@ class IpregistryClient:
         if isinstance(ip, str):
             return self.__lookup_ip(ip, options)
         else:
-            raise ValueError("Invalid value for 'ip' parameter: " + ip)
+            raise ValueError("Invalid value for 'ip' parameter: {!r}".format(ip))
 
     def origin_lookup_asn(self, **options):
         return self.__lookup_asn('AS', options)

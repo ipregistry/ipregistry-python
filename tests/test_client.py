@@ -136,6 +136,15 @@ class TestIpregistryClient(unittest.TestCase):
             response = client.lookup_ip('invalid')
         self.assertEqual('INVALID_IP_ADDRESS', context.exception.code)
 
+    def test_lookup_ip_non_string_input(self):
+        """
+        Test that an IP lookup with a non-string input raises a ValueError
+        """
+        client = IpregistryClient("tryout")
+        with self.assertRaises(ValueError) as context:
+            client.lookup_ip(1234)
+        self.assertIn('1234', str(context.exception))
+
     def test_lookup_ip_cache(self):
         """
         Test consecutive lookup with in-memory cache
