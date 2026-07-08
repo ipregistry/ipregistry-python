@@ -54,7 +54,8 @@ class TestIpregistryRequestHandler(unittest.TestCase):
         """
         Test that a JSON error response raises an ApiError with its fields
         """
-        response = build_response(400, b'{"code": "INVALID_IP_ADDRESS", "message": "Invalid IP.", "resolution": "Fix it."}')
+        response = build_response(
+            400, b'{"code": "INVALID_IP_ADDRESS", "message": "Invalid IP.", "resolution": "Fix it."}')
         with self.assertRaises(ApiError) as context:
             DefaultRequestHandler._DefaultRequestHandler__create_api_error(response)
         self.assertEqual('INVALID_IP_ADDRESS', context.exception.code)

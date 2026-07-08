@@ -33,6 +33,16 @@ async = ["httpx"]
 [tool.poetry.group.dev.dependencies]
 pytest = '>=9.1.1'
 requests-mock = "^1.12.1"
+ruff = "^0.15.20"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+# The public API is intentionally re-exported with star imports.
+ignore = ["F403", "F405"]
 
 [build-system]
 requires = ["poetry-core"]

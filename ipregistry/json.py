@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
-from typing import List, Optional, Union
+from typing import List, Optional
 
 
 class AsType(str, Enum):

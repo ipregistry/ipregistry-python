@@ -226,10 +226,13 @@ class TestIpregistryClientLive(unittest.TestCase):
         """
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
         response = client.batch_parse_user_agents([
-            'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36',
-            'Mozilla/5.0 (Linux; Android 13; SM-S901U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/114.0.0.0 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 13; SM-S901U) AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/112.0.0.0 Mobile Safari/537.36',
             'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36'
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/79.0.3945.79 Safari/537.36'
         ])
 
         self.assertEqual(4, len(response.data))
@@ -352,7 +355,8 @@ class TestIpregistryClientLive(unittest.TestCase):
         Test user agent parsing
         """
         client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
-        response = client.parse_user_agent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+        response = client.parse_user_agent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                                           '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
 
         self.assertIsInstance(response.data, UserAgent)
         self.assertEqual(1, response.credits.consumed)

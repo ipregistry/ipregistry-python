@@ -14,7 +14,7 @@
     limitations under the License.
 """
 
-from ipregistry import ApiError, ClientError, IpInfo, IpregistryClient, LookupError
+from ipregistry import ApiError, ClientError, IpInfo, IpregistryClient
 
 try:
     api_key = "tryout"
