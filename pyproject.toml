@@ -1,10 +1,14 @@
-[tool.poetry]
-authors = [
-    'Ipregistry Team <support@ipregistry.co>',
-    'Laurent Pellegrino <laurent.pellegrino@ipregistry.co>'
-]
+[project]
+name = 'ipregistry'
+version = '5.0.0'
 description = 'Official Python library for Ipregistry'
-homepage = 'https://ipregistry.co'
+authors = [
+    {name = 'Ipregistry Team', email = 'support@ipregistry.co'},
+    {name = 'Laurent Pellegrino', email = 'laurent.pellegrino@ipregistry.co'}
+]
+license = 'Apache-2.0'
+readme = 'README.md'
+requires-python = '>=3.10'
 keywords = [
     'ipinfo',
     'ipregistry',
@@ -14,21 +18,18 @@ keywords = [
     'threat-detection',
     'user-agent-parsing'
 ]
-name = 'ipregistry'
-license = 'Apache-2.0'
-readme = 'README.md'
-repository = 'https://github.com/ipregistry/ipregistry-python'
-version = '5.0.0'
+dependencies = [
+    'cachetools (>=7.1.4,<8.0.0)',
+    'pydantic (>=2.13.4,<3.0.0)',
+    'requests (>=2.34.2,<3.0.0)'
+]
 
-[tool.poetry.dependencies]
-cachetools = '^7.1.4'
-pydantic = "^2.13.4"
-python = '>=3.10'
-requests = '^2.34.2'
-httpx = {version = "^0.28.1", optional = true}
+[project.optional-dependencies]
+async = ['httpx (>=0.28.1,<0.29.0)']
 
-[tool.poetry.extras]
-async = ["httpx"]
+[project.urls]
+Homepage = 'https://ipregistry.co'
+Repository = 'https://github.com/ipregistry/ipregistry-python'
 
 [tool.poetry.group.dev.dependencies]
 pytest = '>=9.1.1'
@@ -45,5 +46,5 @@ select = ["E", "F", "W"]
 ignore = ["F403", "F405"]
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
