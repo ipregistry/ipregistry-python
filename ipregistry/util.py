@@ -20,4 +20,4 @@ class UserAgents:
     @staticmethod
     def is_bot(header):
         header = header.lower()
-        return "bot" in header or "spider" in header
+        return "bot" in header or "spider" in header or "slurp" in header

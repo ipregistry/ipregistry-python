@@ -35,5 +35,13 @@ class TestIpregistryUserAgent(unittest.TestCase):
                                                  "+http://www.google.com/bot.html)"))
 
 
+    def test_isbot_slurp_true(self):
+        """
+        Test that isBot is True with the Yahoo Slurp User-Agent
+        """
+        self.assertEqual(True, UserAgents.is_bot("Mozilla/5.0 (compatible; Yahoo! Slurp; "
+                                                 "http://help.yahoo.com/help/us/ysearch/slurp)"))
+
+
 if __name__ == '__main__':
     unittest.main()
