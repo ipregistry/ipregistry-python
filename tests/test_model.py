@@ -17,7 +17,7 @@
 import unittest
 
 from ipregistry.json import Connection, Currency, CurrencyFormat, IpInfo, UserAgent
-from ipregistry.model import ApiError, LookupError, RequesterIpInfo
+from ipregistry.model import ApiError, ErrorCode, LookupError, RequesterIpInfo
 
 
 class TestIpregistryModel(unittest.TestCase):
@@ -70,6 +70,30 @@ class TestIpregistryModel(unittest.TestCase):
         """
         error = ApiError('INVALID_IP_ADDRESS', 'The IP address is invalid.', 'Check the input.')
         self.assertEqual('The IP address is invalid.', str(error))
+
+    def test_api_error_typed_error_code(self):
+        """
+        Test that ApiError exposes a typed error code alongside the raw string
+        """
+        error = ApiError('INVALID_IP_ADDRESS', 'The IP address is invalid.', 'Check the input.')
+        self.assertEqual(ErrorCode.INVALID_IP_ADDRESS, error.error_code)
+        self.assertEqual('INVALID_IP_ADDRESS', error.code)
+
+    def test_api_error_unknown_error_code(self):
+        """
+        Test that an unrecognized raw code yields no typed error code
+        """
+        error = ApiError('SOME_FUTURE_CODE', 'New error.', None)
+        self.assertIsNone(error.error_code)
+        self.assertEqual('SOME_FUTURE_CODE', error.code)
+
+    def test_error_code_from_code(self):
+        """
+        Test raw to typed error code conversion
+        """
+        self.assertEqual(ErrorCode.TOO_MANY_REQUESTS, ErrorCode.from_code('TOO_MANY_REQUESTS'))
+        self.assertIsNone(ErrorCode.from_code('NOT_A_CODE'))
+        self.assertIsNone(ErrorCode.from_code(None))
 
     def test_lookup_error_str(self):
         """

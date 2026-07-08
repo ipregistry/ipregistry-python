@@ -14,10 +14,42 @@
     limitations under the License.
 """
 
+from enum import Enum
+
 from .json import *
 from typing import Generic, TypeVar, Optional, Dict, Any
 
 T = TypeVar('T')
+
+
+class ErrorCode(str, Enum):
+    BAD_REQUEST = 'BAD_REQUEST'
+    DISABLED_API_KEY = 'DISABLED_API_KEY'
+    FORBIDDEN_IP = 'FORBIDDEN_IP'
+    FORBIDDEN_IP_ORIGIN = 'FORBIDDEN_IP_ORIGIN'
+    FORBIDDEN_ORIGIN = 'FORBIDDEN_ORIGIN'
+    INSUFFICIENT_CREDITS = 'INSUFFICIENT_CREDITS'
+    INTERNAL = 'INTERNAL'
+    INVALID_API_KEY = 'INVALID_API_KEY'
+    INVALID_ASN = 'INVALID_ASN'
+    INVALID_FILTER_SYNTAX = 'INVALID_FILTER_SYNTAX'
+    INVALID_IP_ADDRESS = 'INVALID_IP_ADDRESS'
+    MISSING_API_KEY = 'MISSING_API_KEY'
+    RESERVED_ASN = 'RESERVED_ASN'
+    RESERVED_IP_ADDRESS = 'RESERVED_IP_ADDRESS'
+    TOO_MANY_ASNS = 'TOO_MANY_ASNS'
+    TOO_MANY_IPS = 'TOO_MANY_IPS'
+    TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS'
+    TOO_MANY_USER_AGENTS = 'TOO_MANY_USER_AGENTS'
+    UNKNOWN_ASN = 'UNKNOWN_ASN'
+
+    @classmethod
+    def from_code(cls, code):
+        """Return the typed error code matching the given raw code, or None if unrecognized."""
+        try:
+            return cls(code)
+        except ValueError:
+            return None
 
 
 class ApiResponseCredits:
@@ -60,6 +92,7 @@ class ApiError(IpregistryError):
     def __init__(self, code: str, message: str, resolution: str):
         super().__init__(message)
         self.code = code
+        self.error_code = ErrorCode.from_code(code)
         self.message = message
         self.resolution = resolution
 
