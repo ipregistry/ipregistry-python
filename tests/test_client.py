@@ -20,6 +20,42 @@ import unittest
 from ipregistry import ApiError, AutonomousSystem, IpInfo, LookupError, ClientError, UserAgent
 from ipregistry.cache import InMemoryCache, NoCache
 from ipregistry.core import IpregistryClient, IpregistryConfig
+from ipregistry.model import ApiResponse, ApiResponseCredits, ApiResponseThrottling
+from ipregistry.model import RequesterAutonomousSystem, RequesterIpInfo
+from ipregistry.request import IpregistryRequestHandler
+
+
+class CountingRequestHandler(IpregistryRequestHandler):
+    """Offline request handler stub that counts API calls."""
+
+    def __init__(self, config=None):
+        super().__init__(config if config is not None else IpregistryConfig("tryout"))
+        self.calls = 0
+
+    def __response(self, data):
+        self.calls += 1
+        return ApiResponse(ApiResponseCredits(), data, ApiResponseThrottling())
+
+    def batch_lookup_asns(self, asns, options):
+        return self.__response([AutonomousSystem(asn=asn) for asn in asns])
+
+    def batch_lookup_ips(self, ips, options):
+        return self.__response([IpInfo(ip=ip) for ip in ips])
+
+    def batch_parse_user_agents(self, user_agents, options):
+        return self.__response([UserAgent(header=ua) for ua in user_agents])
+
+    def lookup_asn(self, asn, options):
+        return self.__response(RequesterAutonomousSystem(asn=33) if asn == 'AS' else AutonomousSystem(asn=int(asn[2:])))
+
+    def lookup_ip(self, ip, options):
+        return self.__response(RequesterIpInfo(ip='4.4.4.4') if ip == '' else IpInfo(ip=ip))
+
+    def origin_lookup_ip(self, options):
+        return self.lookup_ip('', options)
+
+    def origin_parse_user_agent(self, options):
+        return self.__response(UserAgent(header='curl'))
 
 
 class TestIpregistryClient(unittest.TestCase):
@@ -144,6 +180,36 @@ class TestIpregistryClient(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             client.lookup_ip(1234)
         self.assertIn('1234', str(context.exception))
+
+    def test_origin_lookups_bypass_cache(self):
+        """
+        Test that origin IP and origin ASN lookups are never cached:
+        cached requester data would be wrong for a different network context
+        """
+        handler = CountingRequestHandler()
+        client = IpregistryClient("tryout", cache=InMemoryCache(), requestHandler=handler)
+
+        client.origin_lookup_ip()
+        client.origin_lookup_ip()
+        self.assertEqual(2, handler.calls)
+
+        client.origin_lookup_asn()
+        client.origin_lookup_asn()
+        self.assertEqual(4, handler.calls)
+
+        self.assertIsNone(client._cache.get(''))
+        self.assertIsNone(client._cache.get('AS'))
+
+    def test_single_lookup_cached(self):
+        """
+        Test that regular single IP lookups are still served from the cache
+        """
+        handler = CountingRequestHandler()
+        client = IpregistryClient("tryout", cache=InMemoryCache(), requestHandler=handler)
+
+        client.lookup_ip('8.8.8.8')
+        client.lookup_ip('8.8.8.8')
+        self.assertEqual(1, handler.calls)
 
     def test_client_context_manager(self):
         """

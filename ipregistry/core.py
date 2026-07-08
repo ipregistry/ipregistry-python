@@ -100,10 +100,10 @@ class IpregistryClient:
             raise ValueError("Invalid value for 'ip' parameter: {!r}".format(ip))
 
     def origin_lookup_asn(self, **options):
-        return self.__lookup_asn('AS', options)
+        return self._requestHandler.lookup_asn('AS', options)
 
     def origin_lookup_ip(self, **options):
-        return self.__lookup_ip('', options)
+        return self._requestHandler.origin_lookup_ip(options)
 
     def origin_parse_user_agent(self, **options):
         return self._requestHandler.origin_parse_user_agent(options)
