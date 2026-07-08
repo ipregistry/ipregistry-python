@@ -1,28 +1,29 @@
-name: Tests
+name: System Tests
 
 on:
-  push:
   workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  live-tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    if: github.repository_owner == 'ipregistry'
 
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.14'
       - name: Install Poetry
         run: pipx install poetry
       - name: Install dependencies
         run: poetry install
-      - name: Run offline tests
+      - name: Run tests against the live API
         run: poetry run pytest
+        env:
+          IPREGISTRY_API_KEY: ${{ secrets.IPREGISTRY_API_KEY }}
