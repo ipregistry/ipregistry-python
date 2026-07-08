@@ -25,10 +25,10 @@ cachetools = '^7.1.4'
 pydantic = "^2.13.4"
 python = '>=3.10'
 requests = '^2.34.2'
-tenacity = ">=9.1,<10.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = '>=9.1.1'
+requests-mock = "^1.12.1"
 
 [build-system]
 requires = ["poetry-core"]

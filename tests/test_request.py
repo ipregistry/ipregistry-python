@@ -17,6 +17,7 @@
 import unittest
 
 import requests
+import requests_mock
 
 from ipregistry.core import IpregistryConfig
 from ipregistry.model import ApiError, ClientError
@@ -28,6 +29,16 @@ def build_response(status_code, content):
     response.status_code = status_code
     response._content = content
     return response
+
+
+def build_mocked_handler(**config_kwargs):
+    """Build a request handler whose session is backed by a mock adapter."""
+    config_kwargs.setdefault('retry_interval', 0)
+    adapter = requests_mock.Adapter()
+    session = requests.Session()
+    session.mount('https://', adapter)
+    handler = DefaultRequestHandler(IpregistryConfig("tryout", **config_kwargs), session=session)
+    return handler, adapter
 
 
 class TestIpregistryRequestHandler(unittest.TestCase):
@@ -82,13 +93,104 @@ class TestIpregistryRequestHandler(unittest.TestCase):
         finally:
             session.close()
 
+    def test_retry_on_server_error_then_success(self):
+        """
+        Test that a 5xx response is retried and the retried request succeeds
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8', [
+            {'status_code': 500, 'json': {'code': 'INTERNAL', 'message': 'Oops.', 'resolution': 'Retry.'}},
+            {'status_code': 200, 'json': {'ip': '8.8.8.8'}},
+        ])
+        response = handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual('8.8.8.8', response.data.ip)
+        self.assertEqual(2, adapter.call_count)
+
+    def test_no_retry_when_server_error_retry_disabled(self):
+        """
+        Test that 5xx responses are not retried when retry_on_server_error is False
+        """
+        handler, adapter = build_mocked_handler(retry_on_server_error=False)
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8',
+                             status_code=500,
+                             json={'code': 'INTERNAL', 'message': 'Oops.', 'resolution': 'Retry.'})
+        with self.assertRaises(ApiError):
+            handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual(1, adapter.call_count)
+
+    def test_retry_attempts_exhausted(self):
+        """
+        Test that retrying stops after retry_max_attempts attempts
+        """
+        handler, adapter = build_mocked_handler(retry_max_attempts=2)
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8',
+                             status_code=503,
+                             json={'code': 'INTERNAL', 'message': 'Oops.', 'resolution': 'Retry.'})
+        with self.assertRaises(ApiError):
+            handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual(2, adapter.call_count)
+
+    def test_too_many_requests_not_retried_by_default(self):
+        """
+        Test that a 429 response is not retried unless opted in
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8',
+                             status_code=429,
+                             json={'code': 'TOO_MANY_REQUESTS', 'message': 'Slow down.', 'resolution': 'Wait.'})
+        with self.assertRaises(ApiError) as context:
+            handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual('TOO_MANY_REQUESTS', context.exception.code)
+        self.assertEqual(1, adapter.call_count)
+
+    def test_too_many_requests_retried_honoring_retry_after(self):
+        """
+        Test that a 429 response is retried when opted in, honoring Retry-After
+        """
+        handler, adapter = build_mocked_handler(retry_on_too_many_requests=True)
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8', [
+            {'status_code': 429, 'headers': {'Retry-After': '0'},
+             'json': {'code': 'TOO_MANY_REQUESTS', 'message': 'Slow down.', 'resolution': 'Wait.'}},
+            {'status_code': 200, 'json': {'ip': '8.8.8.8'}},
+        ])
+        response = handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual('8.8.8.8', response.data.ip)
+        self.assertEqual(2, adapter.call_count)
+
+    def test_transport_error_retried(self):
+        """
+        Test that transient network errors are retried
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8', [
+            {'exc': requests.exceptions.ConnectTimeout},
+            {'status_code': 200, 'json': {'ip': '8.8.8.8'}},
+        ])
+        response = handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual('8.8.8.8', response.data.ip)
+
+    def test_transport_error_exhausted_raises_client_error(self):
+        """
+        Test that a persistent network error surfaces as a ClientError
+        """
+        handler, adapter = build_mocked_handler(retry_max_attempts=2)
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8',
+                             exc=requests.exceptions.ConnectionError)
+        with self.assertRaises(ClientError):
+            handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual(2, adapter.call_count)
+
     def test_origin_lookup_ip_not_double_retried(self):
         """
-        Test that origin_lookup_ip is not retried on top of lookup_ip,
-        which already retries server errors
+        Test that origin_lookup_ip does not retry on top of lookup_ip retries
         """
-        self.assertTrue(hasattr(DefaultRequestHandler.lookup_ip, 'retry'))
-        self.assertFalse(hasattr(DefaultRequestHandler.origin_lookup_ip, 'retry'))
+        handler, adapter = build_mocked_handler(retry_max_attempts=2)
+        adapter.register_uri('GET', 'https://api.ipregistry.co/',
+                             status_code=500,
+                             json={'code': 'INTERNAL', 'message': 'Oops.', 'resolution': 'Retry.'})
+        with self.assertRaises(ApiError):
+            handler.origin_lookup_ip({})
+        self.assertEqual(2, adapter.call_count)
 
     def test_create_api_error_no_response(self):
         """

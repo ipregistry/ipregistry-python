@@ -163,7 +163,9 @@ class IpregistryClient:
 
 
 class IpregistryConfig:
-    def __init__(self, key, base_url="https://api.ipregistry.co", timeout=5):
+    def __init__(self, key, base_url="https://api.ipregistry.co", timeout=5,
+                 retry_max_attempts=3, retry_interval=1,
+                 retry_on_server_error=True, retry_on_too_many_requests=False):
         """
         Initialize the IpregistryConfig instance.
 
@@ -172,11 +174,24 @@ class IpregistryConfig:
         base_url (str): The base URL for the Ipregistry API. Defaults to "https://api.ipregistry.co".
                         There also exists a European Union (EU) base URL "https://eu.api.ipregistry.co"
                         that can be used to ensure requests are handled by nodes hosted in the EU only.
-        timeout (int): The timeout duration (in seconds) for API requests. Defaults to 5 seconds.
+        timeout (int | float | tuple): The timeout duration (in seconds) for API requests.
+                        Defaults to 5 seconds. A (connect, read) tuple is also accepted.
+        retry_max_attempts (int): The maximum number of attempts per request, including the
+                        initial one. Defaults to 3.
+        retry_interval (int | float): The base delay (in seconds) between retries; the actual
+                        delay grows exponentially with each attempt. Defaults to 1 second.
+        retry_on_server_error (bool): Whether to retry requests failing with a 5xx status.
+                        Defaults to True. Transient network errors are always retried.
+        retry_on_too_many_requests (bool): Whether to retry requests failing with a 429 status,
+                        honoring the Retry-After response header. Defaults to False.
         """
         self.api_key = key
         self.base_url = base_url
         self.timeout = timeout
+        self.retry_max_attempts = retry_max_attempts
+        self.retry_interval = retry_interval
+        self.retry_on_server_error = retry_on_server_error
+        self.retry_on_too_many_requests = retry_on_too_many_requests
 
     def with_eu_base_url(self):
         self.base_url = 'https://eu.api.ipregistry.co'
@@ -187,6 +202,9 @@ class IpregistryConfig:
         Return a string representation of the IpregistryConfig instance.
 
         Returns:
-        str: A string containing the API key, base URL, and timeout value.
+        str: A string containing the API key, base URL, timeout and retry settings.
         """
-        return "api_key={}, base_url={}, timeout={}".format(self.api_key, self.base_url, self.timeout)
+        return ("api_key={}, base_url={}, timeout={}, retry_max_attempts={}, retry_interval={}, "
+                "retry_on_server_error={}, retry_on_too_many_requests={}").format(
+            self.api_key, self.base_url, self.timeout, self.retry_max_attempts,
+            self.retry_interval, self.retry_on_server_error, self.retry_on_too_many_requests)

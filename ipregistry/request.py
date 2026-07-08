@@ -16,18 +16,17 @@
 import importlib
 import json
 import sys
+import time
 import urllib.parse
 from abc import ABC, abstractmethod
-
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
 
 from typing import Union
 
 import requests
 
 from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, AutonomousSystem,
-                    ClientError, IpInfo, LookupError, RequesterAutonomousSystem, RequesterIpInfo,
-                    RequesterUserAgent, UserAgent)
+                    ClientError, IpInfo, LookupError, RequesterAutonomousSystem,
+                    RequesterIpInfo, RequesterUserAgent, UserAgent)
 
 
 class IpregistryRequestHandler(ABC):
@@ -78,18 +77,6 @@ class IpregistryRequestHandler(ABC):
         return result
 
 
-def is_server_error(exception):
-    return isinstance(exception, ApiError) and (exception.code == 'INTERNAL')
-
-
-retry_on_server_error = retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=0.5, max=3),
-    retry=retry_if_exception(is_server_error),
-    reraise=True
-)
-
-
 class DefaultRequestHandler(IpregistryRequestHandler):
     def __init__(self, config, session=None):
         super().__init__(config)
@@ -100,145 +87,142 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         if self._owns_session:
             self._session.close()
 
-    @retry_on_server_error
     def batch_lookup_asns(self, asns, options):
-        response = None
+        response = self._request_with_retry(
+            'POST',
+            self._build_base_url('', options),
+            data=json.dumps(["AS" + str(asn) for asn in asns])
+        )
         try:
-            response = self._session.post(
-                self._build_base_url('', options),
-                data=json.dumps(list(map(lambda asn: "AS" + str(asn), asns))),
-                headers=self.__headers(),
-                timeout=self._config.timeout
-            )
-            response.raise_for_status()
             results = response.json().get('results', [])
-
             parsed_results = [
                 LookupError(data) if 'code' in data else AutonomousSystem(**data)
                 for data in results
             ]
-
             return self.build_api_response(response, parsed_results)
-        except requests.HTTPError:
-            self.__create_api_error(response)
         except Exception as e:
             raise ClientError(e)
 
-    @retry_on_server_error
     def batch_lookup_ips(self, ips, options):
-        response = None
+        response = self._request_with_retry(
+            'POST',
+            self._build_base_url('', options),
+            data=json.dumps(ips)
+        )
         try:
-            response = self._session.post(
-                self._build_base_url('', options),
-                data=json.dumps(ips),
-                headers=self.__headers(),
-                timeout=self._config.timeout
-            )
-            response.raise_for_status()
             results = response.json().get('results', [])
-
             parsed_results = [
                 LookupError(data) if 'code' in data else IpInfo(**data)
                 for data in results
             ]
-
             return self.build_api_response(response, parsed_results)
-        except requests.HTTPError:
-            self.__create_api_error(response)
         except Exception as e:
             raise ClientError(e)
 
-    @retry_on_server_error
     def batch_parse_user_agents(self, user_agents, options):
-        response = None
+        response = self._request_with_retry(
+            'POST',
+            self._build_base_url('user_agent', options),
+            data=json.dumps(user_agents)
+        )
         try:
-            response = self._session.post(
-                self._build_base_url('user_agent', options),
-                data=json.dumps(user_agents),
-                headers=self.__headers(),
-                timeout=self._config.timeout
-            )
-            response.raise_for_status()
             results = response.json().get('results', [])
-
             parsed_results = [
                 LookupError(data) if 'code' in data else UserAgent(**data)
                 for data in results
             ]
-
             return self.build_api_response(response, parsed_results)
-        except requests.HTTPError:
-            self.__create_api_error(response)
         except Exception as e:
             raise ClientError(e)
 
-    @retry_on_server_error
     def lookup_asn(self, asn, options):
-        response = None
+        response = self._request_with_retry('GET', self._build_base_url(asn, options))
         try:
-            response = self._session.get(
-                self._build_base_url(asn, options),
-                headers=self.__headers(),
-                timeout=self._config.timeout
-            )
-            response.raise_for_status()
             json_response = response.json()
-
             return self.build_api_response(
                 response,
                 RequesterAutonomousSystem(**json_response) if asn == 'AS'
                 else AutonomousSystem(**json_response)
             )
-        except requests.HTTPError:
-            self.__create_api_error(response)
-        except Exception as err:
-            raise ClientError(err)
+        except Exception as e:
+            raise ClientError(e)
 
-    @retry_on_server_error
     def lookup_ip(self, ip, options):
-        response = None
+        response = self._request_with_retry('GET', self._build_base_url(ip, options))
         try:
-            response = self._session.get(
-                self._build_base_url(ip, options),
-                headers=self.__headers(),
-                timeout=self._config.timeout
-            )
-            response.raise_for_status()
             json_response = response.json()
-
             return self.build_api_response(
                 response,
                 RequesterIpInfo(**json_response) if ip == ''
                 else IpInfo(**json_response)
             )
-        except requests.HTTPError:
-            self.__create_api_error(response)
-        except Exception as err:
-            raise ClientError(err)
+        except Exception as e:
+            raise ClientError(e)
 
     def origin_lookup_ip(self, options):
         return self.lookup_ip('', options)
 
-    @retry_on_server_error
     def origin_parse_user_agent(self, options):
-        response = None
+        response = self._request_with_retry('GET', self._build_base_url('user_agent', options))
         try:
-            response = self._session.get(
-                self._build_base_url('user_agent', options),
-                headers=self.__headers(),
-                timeout=self._config.timeout
-            )
-            response.raise_for_status()
             json_response = response.json()
-
             return self.build_api_response(
                 response,
                 RequesterUserAgent(**json_response)
             )
-        except requests.HTTPError:
-            self.__create_api_error(response)
-        except Exception as err:
-            raise ClientError(err)
+        except Exception as e:
+            raise ClientError(e)
+
+    def _request_with_retry(self, method, url, data=None):
+        """Perform an HTTP request, retrying transient network errors and,
+        depending on the configuration, 5xx and 429 responses with exponential
+        backoff (honoring the Retry-After header for 429 responses)."""
+        max_attempts = max(1, self._config.retry_max_attempts)
+        attempt = 0
+
+        while True:
+            attempt += 1
+            try:
+                response = self._session.request(
+                    method,
+                    url,
+                    data=data,
+                    headers=self.__headers(),
+                    timeout=self._config.timeout
+                )
+            except requests.RequestException as e:
+                if attempt < max_attempts:
+                    time.sleep(self.__backoff_interval(attempt))
+                    continue
+                raise ClientError(e)
+
+            if response.status_code >= 400:
+                if attempt < max_attempts and self.__is_retryable_status(response.status_code):
+                    time.sleep(self.__retry_delay(response, attempt))
+                    continue
+                self.__create_api_error(response)
+
+            return response
+
+    def __is_retryable_status(self, status_code):
+        if status_code == 429:
+            return self._config.retry_on_too_many_requests
+        return status_code >= 500 and self._config.retry_on_server_error
+
+    def __retry_delay(self, response, attempt):
+        if response.status_code == 429:
+            retry_after = response.headers.get('retry-after')
+            if retry_after is not None:
+                try:
+                    seconds = int(retry_after)
+                    if seconds >= 0:
+                        return seconds
+                except ValueError:
+                    pass
+        return self.__backoff_interval(attempt)
+
+    def __backoff_interval(self, attempt):
+        return self._config.retry_interval * (2 ** min(attempt - 1, 30))
 
     @staticmethod
     def build_api_response(response, data):
@@ -301,4 +285,3 @@ class DefaultRequestHandler(IpregistryRequestHandler):
                 python_version +
                 "; +https://github.com/ipregistry/ipregistry-python)"
         }
-
