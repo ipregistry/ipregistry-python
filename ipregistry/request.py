@@ -273,15 +273,23 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         raise ApiError(code, message, resolution)
 
     def __headers(self):
-        python_version = sys.version.split()[0]
-        lib_version = importlib.metadata.version('ipregistry')
         return {
             "authorization": "ApiKey " + self._config.api_key,
             "content-type": "application/json",
-            "user-agent":
-                "Ipregistry/" +
-                lib_version +
-                " (Library; Python/" +
-                python_version +
-                "; +https://github.com/ipregistry/ipregistry-python)"
+            "user-agent": self.__user_agent()
         }
+
+    def __user_agent(self):
+        custom_user_agent = getattr(self._config, 'user_agent', None)
+        if custom_user_agent:
+            return custom_user_agent
+
+        python_version = sys.version.split()[0]
+        lib_version = importlib.metadata.version('ipregistry')
+        return (
+            "Ipregistry/" +
+            lib_version +
+            " (Library; Python/" +
+            python_version +
+            "; +https://github.com/ipregistry/ipregistry-python)"
+        )

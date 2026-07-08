@@ -70,6 +70,24 @@ class TestIpregistryRequestHandler(unittest.TestCase):
             DefaultRequestHandler._DefaultRequestHandler__create_api_error(response)
         self.assertIn('502', str(context.exception))
 
+    def test_default_user_agent_header(self):
+        """
+        Test that the default User-Agent header identifies the library
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8', json={'ip': '8.8.8.8'})
+        handler.lookup_ip('8.8.8.8', {})
+        self.assertTrue(adapter.last_request.headers['user-agent'].startswith('Ipregistry/'))
+
+    def test_custom_user_agent_header(self):
+        """
+        Test that a configured User-Agent value overrides the default header
+        """
+        handler, adapter = build_mocked_handler(user_agent='MyApp/1.0')
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8', json={'ip': '8.8.8.8'})
+        handler.lookup_ip('8.8.8.8', {})
+        self.assertEqual('MyApp/1.0', adapter.last_request.headers['user-agent'])
+
     def test_owned_session_lifecycle(self):
         """
         Test that the handler creates its own pooled session and closes it
