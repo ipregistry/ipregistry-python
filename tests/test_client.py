@@ -181,6 +181,50 @@ class TestIpregistryClient(unittest.TestCase):
             client.lookup_ip(1234)
         self.assertIn('1234', str(context.exception))
 
+    def test_batch_lookup_auto_split(self):
+        """
+        Test that batches larger than max_batch_size are split into
+        chunks and reassembled in input order
+        """
+        handler = CountingRequestHandler()
+        client = IpregistryClient("tryout", requestHandler=handler, max_batch_size=2, batch_concurrency=2)
+
+        ips = ['1.1.1.{}'.format(i) for i in range(5)]
+        response = client.batch_lookup_ips(ips)
+
+        self.assertEqual(3, handler.calls)
+        self.assertEqual(ips, [info.ip for info in response.data])
+
+    def test_batch_lookup_auto_split_sequential(self):
+        """
+        Test that chunked batches also work with batch_concurrency=1
+        """
+        handler = CountingRequestHandler()
+        client = IpregistryClient("tryout", requestHandler=handler, max_batch_size=2, batch_concurrency=1)
+
+        ips = ['1.1.1.{}'.format(i) for i in range(4)]
+        response = client.batch_lookup_ips(ips)
+
+        self.assertEqual(2, handler.calls)
+        self.assertEqual(ips, [info.ip for info in response.data])
+
+    def test_batch_lookup_no_split_within_limit(self):
+        """
+        Test that batches within max_batch_size trigger a single API call
+        """
+        handler = CountingRequestHandler()
+        client = IpregistryClient("tryout", requestHandler=handler)
+
+        client.batch_lookup_ips(['1.1.1.1', '1.1.1.2'])
+        self.assertEqual(1, handler.calls)
+
+    def test_max_batch_size_capped(self):
+        """
+        Test that max_batch_size cannot exceed the API limit of 1024
+        """
+        client = IpregistryClient("tryout", max_batch_size=5000)
+        self.assertEqual(1024, client._max_batch_size)
+
     def test_origin_lookups_bypass_cache(self):
         """
         Test that origin IP and origin ASN lookups are never cached:

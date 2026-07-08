@@ -13,10 +13,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 """
+from concurrent.futures import ThreadPoolExecutor
+
 from .cache import IpregistryCache, NoCache
 from .json import AutonomousSystem, IpInfo
 from .model import LookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
 from .request import DefaultRequestHandler, IpregistryRequestHandler
+
+MAX_BATCH_SIZE = 1024
 
 
 class IpregistryClient:
@@ -25,7 +29,11 @@ class IpregistryClient:
         self._cache = kwargs["cache"] if "cache" in kwargs else NoCache()
         self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs \
             else DefaultRequestHandler(self._config, session=kwargs.get("session"))
+        self._max_batch_size = min(int(kwargs.get("max_batch_size", MAX_BATCH_SIZE)), MAX_BATCH_SIZE)
+        self._batch_concurrency = max(int(kwargs.get("batch_concurrency", 4)), 1)
 
+        if self._max_batch_size < 1:
+            raise ValueError("max_batch_size must be at least 1")
         if not isinstance(self._cache, IpregistryCache):
             raise ValueError("Given cache instance is not of type IpregistryCache")
         if not isinstance(self._requestHandler, IpregistryRequestHandler):
@@ -64,7 +72,7 @@ class IpregistryClient:
 
         result = [None] * len(items)
         if len(cache_misses) > 0:
-            response = request_handler_func(cache_misses, options)
+            response = self.__batch_request_chunked(cache_misses, request_handler_func, options)
         else:
             response = ApiResponse(
                 ApiResponseCredits(),
@@ -89,6 +97,40 @@ class IpregistryClient:
         response.data = result
 
         return response
+
+    def __batch_request_chunked(self, items, request_handler_func, options):
+        """Split a batch into chunks of at most max_batch_size items and issue
+        them concurrently, preserving input order in the merged response."""
+        if len(items) <= self._max_batch_size:
+            return request_handler_func(items, options)
+
+        chunks = [items[i:i + self._max_batch_size] for i in range(0, len(items), self._max_batch_size)]
+
+        if self._batch_concurrency > 1:
+            with ThreadPoolExecutor(max_workers=self._batch_concurrency) as executor:
+                responses = list(executor.map(lambda chunk: request_handler_func(chunk, options), chunks))
+        else:
+            responses = [request_handler_func(chunk, options) for chunk in chunks]
+
+        data = []
+        credits_consumed = 0
+        credits_remaining = None
+        throttling = None
+        for response in responses:
+            data.extend(response.data)
+            if response.credits.consumed is not None:
+                credits_consumed += response.credits.consumed
+            if response.credits.remaining is not None:
+                credits_remaining = response.credits.remaining \
+                    if credits_remaining is None else min(credits_remaining, response.credits.remaining)
+            if response.throttling is not None:
+                throttling = response.throttling
+
+        return ApiResponse(
+            ApiResponseCredits(credits_consumed, credits_remaining),
+            data,
+            throttling if throttling is not None else ApiResponseThrottling()
+        )
 
     def lookup_asn(self, asn, **options):
         return self.__lookup_asn(asn, options)
