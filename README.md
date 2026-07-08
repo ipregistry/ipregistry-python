@@ -9,7 +9,7 @@ This is the official Python client library for the [Ipregistry](https://ipregist
 allowing you to lookup your own IP address or specified ones. Responses return multiple data points including carrier, 
 company, currency, location, timezone, threat information, and more.
 
-Starting version 3 of the library, support for Python 2 has been dropped and the library requires Python 3.6+.
+Starting version 3 of the library, support for Python 2 has been dropped. Version 5 and above require Python 3.10+.
 
 ## Getting Started
 
@@ -85,8 +85,50 @@ response = client.parse_user_agent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/
 print(response.data)
 ```
 
+#### Asynchronous Client
+
+An asyncio-based client with the same feature set is available when the library is installed
+with the `async` extra (`pip install ipregistry[async]`):
+
+```python
+from ipregistry import AsyncIpregistryClient
+
+async def main():
+    async with AsyncIpregistryClient("YOUR_API_KEY") as client:
+        response = await client.lookup_ip("54.85.132.205")
+        print(response.data.location.country.code)
+```
+
 More advanced examples are available in the [samples](https://github.com/ipregistry/ipregistry-python/tree/master/samples) 
 folder.
+
+### Configuration
+
+Timeouts, retries and the User-Agent header are configurable through `IpregistryConfig`:
+
+```python
+from ipregistry import IpregistryClient, IpregistryConfig
+
+config = IpregistryConfig(
+    "YOUR_API_KEY",
+    timeout=15,                        # seconds; a (connect, read) tuple is also accepted
+    retry_max_attempts=3,              # attempts per request, including the initial one
+    retry_interval=1,                  # base delay in seconds, doubled on each retry
+    retry_on_server_error=True,        # retry 5xx responses
+    retry_on_too_many_requests=False,  # retry 429 responses, honoring Retry-After
+    user_agent=None                    # custom User-Agent header value
+)
+client = IpregistryClient(config)
+```
+
+Transient network errors are always retried up to `retry_max_attempts`.
+
+The client reuses pooled HTTP connections through a `requests.Session`. You may pass your own
+session with `IpregistryClient("YOUR_API_KEY", session=my_session)` for proxy or TLS control,
+and release resources with `client.close()` or by using the client as a context manager.
+
+Batch lookups larger than the API limit of 1024 items are automatically split into concurrent
+chunks. Tune this with `IpregistryClient("YOUR_API_KEY", max_batch_size=1024, batch_concurrency=4)`.
 
 ### Caching
 
@@ -130,7 +172,7 @@ All Ipregistry exceptions inherit `IpregistryError` class.
 
 Main subtypes are `ApiError` and `ClientError`.
 
-Errors of type _ApiError_ include a code field that maps to the one described in the [Ipregistry documentation](https://ipregistry.co/docs/errors).
+Errors of type _ApiError_ include a `code` field that maps to the one described in the [Ipregistry documentation](https://ipregistry.co/docs/errors), along with a typed `error_code` enum value (`ErrorCode`) that is `None` for unrecognized codes.
 
 ### Filtering bots
 

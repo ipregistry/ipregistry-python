@@ -6,10 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Add an asyncio-based `AsyncIpregistryClient` with the same feature set, available with the `async`
+  extra: `pip install ipregistry[async]`.
+- Add configurable retries through `IpregistryConfig`: `retry_max_attempts`, `retry_interval`,
+  `retry_on_server_error` and `retry_on_too_many_requests` (honoring the `Retry-After` header).
+  Transient network errors are now retried too.
+- Add a typed `ErrorCode` enum exposed as `ApiError.error_code`.
+- Add automatic splitting of batch lookups larger than the API limit of 1024 items into concurrent
+  chunks, tunable with the `max_batch_size` and `batch_concurrency` client options.
+- Add `close()` and context manager support to `IpregistryClient`, plus an optional `session`
+  option to provide a custom `requests.Session`.
+- Add a `user_agent` configuration option to customize the User-Agent header.
+- Add a release workflow publishing to PyPI through trusted publishing, a ruff lint workflow, and
+  a weekly scheduled workflow running tests against the live API.
 ### Changed
 - Require Python 3.10+.
-- Update all dependencies to their latest versions.
+- Update all dependencies to their latest versions and remove the dependency on tenacity.
+- Reuse pooled HTTP connections through a `requests.Session` instead of opening a new connection
+  per request.
+- Align the default request timeout with other Ipregistry client libraries: 15 seconds instead of 5.
+- Origin lookups are no longer cached: cached requester data would be stale or wrong when the
+  network context changes.
+- Cache keys are now deterministic regardless of the order lookup options are given in.
 - Remove the redundant retry on `origin_lookup_ip` that could triple retry attempts.
+- Detect the Yahoo Slurp crawler in `UserAgents.is_bot`.
 ### Fixed
 - Fix nested model fields (`Connection`, `CurrencyFormat`, `UserAgent` device/engine/os, `RequesterIpInfo` user_agent)
   raising a validation error when excluded from a response using the `fields` parameter.
