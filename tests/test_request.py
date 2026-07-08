@@ -59,6 +59,29 @@ class TestIpregistryRequestHandler(unittest.TestCase):
             DefaultRequestHandler._DefaultRequestHandler__create_api_error(response)
         self.assertIn('502', str(context.exception))
 
+    def test_owned_session_lifecycle(self):
+        """
+        Test that the handler creates its own pooled session and closes it
+        """
+        handler = DefaultRequestHandler(IpregistryConfig("tryout"))
+        self.assertIsInstance(handler._session, requests.Session)
+        self.assertTrue(handler._owns_session)
+        handler.close()
+
+    def test_custom_session_not_owned(self):
+        """
+        Test that a caller-provided session is used and not closed by the handler
+        """
+        session = requests.Session()
+        try:
+            handler = DefaultRequestHandler(IpregistryConfig("tryout"), session=session)
+            self.assertIs(session, handler._session)
+            self.assertFalse(handler._owns_session)
+            handler.close()
+            self.assertTrue(len(session.adapters) > 0)
+        finally:
+            session.close()
+
     def test_origin_lookup_ip_not_double_retried(self):
         """
         Test that origin_lookup_ip is not retried on top of lookup_ip,

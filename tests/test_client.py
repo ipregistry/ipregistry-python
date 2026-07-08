@@ -145,6 +145,15 @@ class TestIpregistryClient(unittest.TestCase):
             client.lookup_ip(1234)
         self.assertIn('1234', str(context.exception))
 
+    def test_client_context_manager(self):
+        """
+        Test that the client supports the context manager protocol
+        and closes its request handler session on exit
+        """
+        with IpregistryClient("tryout") as client:
+            session = client._requestHandler._session
+            self.assertIsNotNone(session)
+
     def test_is_number_rejects_floats(self):
         """
         Test that ASN detection only accepts integers, so a float

@@ -34,6 +34,9 @@ class IpregistryRequestHandler(ABC):
     def __init__(self, config):
         self._config = config
 
+    def close(self):
+        pass
+
     @abstractmethod
     def batch_lookup_asns(self, ips, options):
         pass
@@ -88,12 +91,20 @@ retry_on_server_error = retry(
 
 
 class DefaultRequestHandler(IpregistryRequestHandler):
+    def __init__(self, config, session=None):
+        super().__init__(config)
+        self._owns_session = session is None
+        self._session = requests.Session() if session is None else session
+
+    def close(self):
+        if self._owns_session:
+            self._session.close()
 
     @retry_on_server_error
     def batch_lookup_asns(self, asns, options):
         response = None
         try:
-            response = requests.post(
+            response = self._session.post(
                 self._build_base_url('', options),
                 data=json.dumps(list(map(lambda asn: "AS" + str(asn), asns))),
                 headers=self.__headers(),
@@ -117,7 +128,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def batch_lookup_ips(self, ips, options):
         response = None
         try:
-            response = requests.post(
+            response = self._session.post(
                 self._build_base_url('', options),
                 data=json.dumps(ips),
                 headers=self.__headers(),
@@ -141,7 +152,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def batch_parse_user_agents(self, user_agents, options):
         response = None
         try:
-            response = requests.post(
+            response = self._session.post(
                 self._build_base_url('user_agent', options),
                 data=json.dumps(user_agents),
                 headers=self.__headers(),
@@ -165,7 +176,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def lookup_asn(self, asn, options):
         response = None
         try:
-            response = requests.get(
+            response = self._session.get(
                 self._build_base_url(asn, options),
                 headers=self.__headers(),
                 timeout=self._config.timeout
@@ -187,7 +198,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def lookup_ip(self, ip, options):
         response = None
         try:
-            response = requests.get(
+            response = self._session.get(
                 self._build_base_url(ip, options),
                 headers=self.__headers(),
                 timeout=self._config.timeout
@@ -212,7 +223,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def origin_parse_user_agent(self, options):
         response = None
         try:
-            response = requests.get(
+            response = self._session.get(
                 self._build_base_url('user_agent', options),
                 headers=self.__headers(),
                 timeout=self._config.timeout

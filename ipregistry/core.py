@@ -23,12 +23,22 @@ class IpregistryClient:
     def __init__(self, key_or_config, **kwargs):
         self._config = key_or_config if isinstance(key_or_config, IpregistryConfig) else IpregistryConfig(key_or_config)
         self._cache = kwargs["cache"] if "cache" in kwargs else NoCache()
-        self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs else DefaultRequestHandler(self._config)
+        self._requestHandler = kwargs["requestHandler"] if "requestHandler" in kwargs \
+            else DefaultRequestHandler(self._config, session=kwargs.get("session"))
 
         if not isinstance(self._cache, IpregistryCache):
             raise ValueError("Given cache instance is not of type IpregistryCache")
         if not isinstance(self._requestHandler, IpregistryRequestHandler):
             raise ValueError("Given request handler instance is not of type IpregistryRequestHandler")
+
+    def close(self):
+        self._requestHandler.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def batch_lookup_asns(self, ips, **options):
         return self.batch_request(ips, self._requestHandler.batch_lookup_asns, **options)
