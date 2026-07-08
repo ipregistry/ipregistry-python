@@ -173,6 +173,17 @@ class TestIpregistryClient(unittest.TestCase):
         build_cache_key = IpregistryClient._IpregistryClient__build_cache_key
         self.assertEqual('8.8.8.8;hostname=true;n=5', build_cache_key('8.8.8.8', {'hostname': True, 'n': 5}))
 
+    def test_build_cache_key_deterministic(self):
+        """
+        Test that the same options produce the same cache key
+        regardless of the order they are given in
+        """
+        build_cache_key = IpregistryClient._IpregistryClient__build_cache_key
+        self.assertEqual(
+            build_cache_key('8.8.8.8', {'hostname': True, 'fields': 'location'}),
+            build_cache_key('8.8.8.8', {'fields': 'location', 'hostname': True})
+        )
+
     def test_lookup_ip_cache(self):
         """
         Test consecutive lookup with in-memory cache

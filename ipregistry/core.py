@@ -142,7 +142,7 @@ class IpregistryClient:
     def __build_cache_key(key, options):
         result = key
 
-        for key, value in options.items():
+        for key, value in sorted(options.items()):
             if isinstance(value, bool):
                 value = 'true' if value is True else 'false'
             result += ';' + key + '=' + str(value)
