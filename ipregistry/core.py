@@ -23,6 +23,49 @@ from .request import DefaultRequestHandler, IpregistryRequestHandler
 MAX_BATCH_SIZE = 1024
 
 
+def _build_cache_key(key, options):
+    result = key
+
+    for option_key, value in sorted(options.items()):
+        if isinstance(value, bool):
+            value = 'true' if value is True else 'false'
+        result += ';' + option_key + '=' + str(value)
+
+    return result
+
+
+def _is_number(value):
+    try:
+        int(str(value))
+        return True
+    except ValueError:
+        return False
+
+
+def _merge_batch_responses(responses):
+    """Merge chunked batch responses, preserving chunk order and combining
+    credits and throttling metadata."""
+    data = []
+    credits_consumed = 0
+    credits_remaining = None
+    throttling = None
+    for response in responses:
+        data.extend(response.data)
+        if response.credits.consumed is not None:
+            credits_consumed += response.credits.consumed
+        if response.credits.remaining is not None:
+            credits_remaining = response.credits.remaining \
+                if credits_remaining is None else min(credits_remaining, response.credits.remaining)
+        if response.throttling is not None:
+            throttling = response.throttling
+
+    return ApiResponse(
+        ApiResponseCredits(credits_consumed, credits_remaining),
+        data,
+        throttling if throttling is not None else ApiResponseThrottling()
+    )
+
+
 class IpregistryClient:
     def __init__(self, key_or_config, **kwargs):
         self._config = key_or_config if isinstance(key_or_config, IpregistryConfig) else IpregistryConfig(key_or_config)
@@ -112,25 +155,7 @@ class IpregistryClient:
         else:
             responses = [request_handler_func(chunk, options) for chunk in chunks]
 
-        data = []
-        credits_consumed = 0
-        credits_remaining = None
-        throttling = None
-        for response in responses:
-            data.extend(response.data)
-            if response.credits.consumed is not None:
-                credits_consumed += response.credits.consumed
-            if response.credits.remaining is not None:
-                credits_remaining = response.credits.remaining \
-                    if credits_remaining is None else min(credits_remaining, response.credits.remaining)
-            if response.throttling is not None:
-                throttling = response.throttling
-
-        return ApiResponse(
-            ApiResponseCredits(credits_consumed, credits_remaining),
-            data,
-            throttling if throttling is not None else ApiResponseThrottling()
-        )
+        return _merge_batch_responses(responses)
 
     def lookup_asn(self, asn, **options):
         return self.__lookup_asn(asn, options)
@@ -182,14 +207,7 @@ class IpregistryClient:
 
     @staticmethod
     def __build_cache_key(key, options):
-        result = key
-
-        for key, value in sorted(options.items()):
-            if isinstance(value, bool):
-                value = 'true' if value is True else 'false'
-            result += ';' + key + '=' + str(value)
-
-        return result
+        return _build_cache_key(key, options)
 
     @staticmethod
     def __is_api_error(data):
@@ -197,11 +215,7 @@ class IpregistryClient:
 
     @staticmethod
     def __is_number(value):
-        try:
-            int(str(value))
-            return True
-        except ValueError:
-            return False
+        return _is_number(value)
 
 
 class IpregistryConfig:

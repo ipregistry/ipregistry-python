@@ -29,6 +29,71 @@ from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrott
                     RequesterIpInfo, RequesterUserAgent, UserAgent)
 
 
+def _build_headers(config):
+    """Build the HTTP headers shared by all Ipregistry API requests."""
+    custom_user_agent = getattr(config, 'user_agent', None)
+    if custom_user_agent:
+        user_agent = custom_user_agent
+    else:
+        python_version = sys.version.split()[0]
+        lib_version = importlib.metadata.version('ipregistry')
+        user_agent = (
+            "Ipregistry/" +
+            lib_version +
+            " (Library; Python/" +
+            python_version +
+            "; +https://github.com/ipregistry/ipregistry-python)"
+        )
+
+    return {
+        "authorization": "ApiKey " + config.api_key,
+        "content-type": "application/json",
+        "user-agent": user_agent
+    }
+
+
+def _raise_api_error(response):
+    """Raise an ApiError built from an error response, or a ClientError when
+    the response is missing or its body is not a recognizable error payload."""
+    if response is None:
+        raise ClientError("HTTP Error occurred, but no response was received.")
+
+    try:
+        json_response = response.json()
+        code = json_response['code']
+        message = json_response['message']
+        resolution = json_response.get('resolution')
+    except (ValueError, KeyError, TypeError):
+        raise ClientError(
+            "HTTP error {} with unexpected response body.".format(response.status_code)
+        )
+
+    raise ApiError(code, message, resolution)
+
+
+def _is_retryable_status(config, status_code):
+    if status_code == 429:
+        return config.retry_on_too_many_requests
+    return status_code >= 500 and config.retry_on_server_error
+
+
+def _backoff_interval(config, attempt):
+    return config.retry_interval * (2 ** min(attempt - 1, 30))
+
+
+def _retry_delay(config, response, attempt):
+    if response.status_code == 429:
+        retry_after = response.headers.get('retry-after')
+        if retry_after is not None:
+            try:
+                seconds = int(retry_after)
+                if seconds >= 0:
+                    return seconds
+            except ValueError:
+                pass
+    return _backoff_interval(config, attempt)
+
+
 class IpregistryRequestHandler(ABC):
     def __init__(self, config):
         self._config = config
@@ -205,24 +270,13 @@ class DefaultRequestHandler(IpregistryRequestHandler):
             return response
 
     def __is_retryable_status(self, status_code):
-        if status_code == 429:
-            return self._config.retry_on_too_many_requests
-        return status_code >= 500 and self._config.retry_on_server_error
+        return _is_retryable_status(self._config, status_code)
 
     def __retry_delay(self, response, attempt):
-        if response.status_code == 429:
-            retry_after = response.headers.get('retry-after')
-            if retry_after is not None:
-                try:
-                    seconds = int(retry_after)
-                    if seconds >= 0:
-                        return seconds
-                except ValueError:
-                    pass
-        return self.__backoff_interval(attempt)
+        return _retry_delay(self._config, response, attempt)
 
     def __backoff_interval(self, attempt):
-        return self._config.retry_interval * (2 ** min(attempt - 1, 30))
+        return _backoff_interval(self._config, attempt)
 
     @staticmethod
     def build_api_response(response, data):
@@ -257,39 +311,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
 
     @staticmethod
     def __create_api_error(response):
-        if response is None:
-            raise ClientError("HTTP Error occurred, but no response was received.")
-
-        try:
-            json_response = response.json()
-            code = json_response['code']
-            message = json_response['message']
-            resolution = json_response.get('resolution')
-        except (ValueError, KeyError, TypeError):
-            raise ClientError(
-                "HTTP error {} with unexpected response body.".format(response.status_code)
-            )
-
-        raise ApiError(code, message, resolution)
+        _raise_api_error(response)
 
     def __headers(self):
-        return {
-            "authorization": "ApiKey " + self._config.api_key,
-            "content-type": "application/json",
-            "user-agent": self.__user_agent()
-        }
-
-    def __user_agent(self):
-        custom_user_agent = getattr(self._config, 'user_agent', None)
-        if custom_user_agent:
-            return custom_user_agent
-
-        python_version = sys.version.split()[0]
-        lib_version = importlib.metadata.version('ipregistry')
-        return (
-            "Ipregistry/" +
-            lib_version +
-            " (Library; Python/" +
-            python_version +
-            "; +https://github.com/ipregistry/ipregistry-python)"
-        )
+        return _build_headers(self._config)

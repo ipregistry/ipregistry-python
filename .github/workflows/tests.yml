@@ -23,6 +23,6 @@ jobs:
       - name: Install Poetry
         run: pipx install poetry
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --all-extras
       - name: Run offline tests
         run: poetry run pytest

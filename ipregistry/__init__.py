@@ -1,5 +1,6 @@
 name = "ipregistry"
 
+from .async_client import AsyncDefaultRequestHandler, AsyncIpregistryClient
 from .cache import *
 from .core import *
 from .json import *
