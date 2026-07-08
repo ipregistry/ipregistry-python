@@ -27,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a weekly scheduled workflow running tests against the live API.
 ### Changed
 - Require Python 3.10+.
-- Migrate the project metadata to the standard PEP 621 format.
+- Migrate the project metadata to the standard PEP 621 format and switch project management
+  from Poetry to [uv](https://docs.astral.sh/uv/).
 - Update all dependencies to their latest versions and remove the dependency on tenacity.
 - Reuse pooled HTTP connections through a `requests.Session` instead of opening a new connection
   per request.
