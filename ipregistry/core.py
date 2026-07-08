@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .cache import IpregistryCache, NoCache
 from .json import AutonomousSystem, IpInfo
-from .model import LookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
+from .model import IpregistryLookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 MAX_BATCH_SIZE = 1024
@@ -129,7 +129,7 @@ class IpregistryClient:
 
         for cached_item_info in sparse_cache:
             if cached_item_info is None:
-                if not isinstance(fresh_item_info[k], LookupError):
+                if not isinstance(fresh_item_info[k], IpregistryLookupError):
                     self._cache.put(self.__build_cache_key(items[j], options), fresh_item_info[k])
                 result[j] = fresh_item_info[k]
                 k += 1

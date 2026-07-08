@@ -101,10 +101,15 @@ class ClientError(IpregistryError):
    pass
 
 
-class LookupError(ApiError):
+class IpregistryLookupError(ApiError):
     def __init__(self, json: Dict[str, Any]):
         super().__init__(
             code=json.get('code'),
             message=json.get('message'),
             resolution=json.get('resolution')
         )
+
+
+# Backward-compatible alias. Prefer IpregistryLookupError, which does not
+# shadow the Python builtin of the same name.
+LookupError = IpregistryLookupError

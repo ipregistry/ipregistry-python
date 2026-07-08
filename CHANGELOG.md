@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `retry_on_server_error` and `retry_on_too_many_requests` (honoring the `Retry-After` header).
   Transient network errors are now retried too.
 - Add a typed `ErrorCode` enum exposed as `ApiError.error_code`.
+- Add `IpregistryLookupError` as the primary name for per-entry batch lookup errors; the previous
+  `LookupError` name, which shadows the Python builtin, remains available as an alias.
+- Ship a `py.typed` marker so type checkers use the library's annotations.
 - Add automatic splitting of batch lookups larger than the API limit of 1024 items into concurrent
   chunks, tunable with the `max_batch_size` and `batch_concurrency` client options.
 - Add `close()` and context manager support to `IpregistryClient`, plus an optional `session`
@@ -24,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a weekly scheduled workflow running tests against the live API.
 ### Changed
 - Require Python 3.10+.
+- Migrate the project metadata to the standard PEP 621 format.
 - Update all dependencies to their latest versions and remove the dependency on tenacity.
 - Reuse pooled HTTP connections through a `requests.Session` instead of opening a new connection
   per request.
@@ -91,12 +95,13 @@ https://github.com/ipregistry/ipregistry-python#caching
 ## [1.0.0] - 2019-07-28
 - First public release.
 
-[Unreleased]: https://github.com/ipregistry/ipregistry-javascript/compare/4.0.0...HEAD
-[4.0.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/3.2.0...4.0.0s
-[3.2.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/3.1.0...3.2.0
-[3.1.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/3.0.0...3.1.0
-[3.0.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/2.0.1...3.0.0
-[2.0.1]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/2.0.0...2.0.1
-[2.0.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/1.1.0...2.0.0
-[1.1.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/1.0.0...1.1.0
-[1.0.0]: https://github.com/ipregistry/ipregistry-javascript/releases/tag/1.0.0
+[Unreleased]: https://github.com/ipregistry/ipregistry-python/compare/5.0.0...HEAD
+[5.0.0]: https://github.com/ipregistry/ipregistry-python/compare/4.0.0...5.0.0
+[4.0.0]: https://github.com/ipregistry/ipregistry-python/compare/3.2.0...4.0.0
+[3.2.0]: https://github.com/ipregistry/ipregistry-python/compare/3.1.0...3.2.0
+[3.1.0]: https://github.com/ipregistry/ipregistry-python/compare/3.0.0...3.1.0
+[3.0.0]: https://github.com/ipregistry/ipregistry-python/compare/2.0.1...3.0.0
+[2.0.1]: https://github.com/ipregistry/ipregistry-python/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/ipregistry/ipregistry-python/compare/1.1.0...2.0.0
+[1.1.0]: https://github.com/ipregistry/ipregistry-python/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/ipregistry/ipregistry-python/releases/tag/1.0.0

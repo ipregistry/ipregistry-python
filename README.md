@@ -170,7 +170,7 @@ client = IpregistryClient(IpregistryConfig("YOUR_API_KEY").with_eu_base_url())
 
 All Ipregistry exceptions inherit `IpregistryError` class.
 
-Main subtypes are `ApiError` and `ClientError`.
+Main subtypes are `ApiError` and `ClientError`. Failed entries in batch responses are instances of `IpregistryLookupError` (also available under the legacy alias `LookupError`).
 
 Errors of type _ApiError_ include a `code` field that maps to the one described in the [Ipregistry documentation](https://ipregistry.co/docs/errors), along with a typed `error_code` enum value (`ErrorCode`) that is `None` for unrecognized codes.
 

@@ -21,7 +21,7 @@ from .core import (MAX_BATCH_SIZE, IpregistryConfig, _build_cache_key, _is_numbe
                    _merge_batch_responses)
 from .json import AutonomousSystem, IpInfo
 from .model import (ApiResponse, ApiResponseCredits, ApiResponseThrottling,
-                    ClientError, LookupError, RequesterAutonomousSystem,
+                    ClientError, IpregistryLookupError, RequesterAutonomousSystem,
                     RequesterIpInfo, RequesterUserAgent, UserAgent)
 from .request import (DefaultRequestHandler, IpregistryRequestHandler, _backoff_interval,
                       _build_headers, _is_retryable_status, _raise_api_error, _retry_delay)
@@ -63,7 +63,7 @@ class AsyncDefaultRequestHandler(IpregistryRequestHandler):
         try:
             results = response.json().get('results', [])
             parsed_results = [
-                LookupError(data) if 'code' in data else AutonomousSystem(**data)
+                IpregistryLookupError(data) if 'code' in data else AutonomousSystem(**data)
                 for data in results
             ]
             return DefaultRequestHandler.build_api_response(response, parsed_results)
@@ -79,7 +79,7 @@ class AsyncDefaultRequestHandler(IpregistryRequestHandler):
         try:
             results = response.json().get('results', [])
             parsed_results = [
-                LookupError(data) if 'code' in data else IpInfo(**data)
+                IpregistryLookupError(data) if 'code' in data else IpInfo(**data)
                 for data in results
             ]
             return DefaultRequestHandler.build_api_response(response, parsed_results)
@@ -95,7 +95,7 @@ class AsyncDefaultRequestHandler(IpregistryRequestHandler):
         try:
             results = response.json().get('results', [])
             parsed_results = [
-                LookupError(data) if 'code' in data else UserAgent(**data)
+                IpregistryLookupError(data) if 'code' in data else UserAgent(**data)
                 for data in results
             ]
             return DefaultRequestHandler.build_api_response(response, parsed_results)
@@ -244,7 +244,7 @@ class AsyncIpregistryClient:
 
         for cached_item_info in sparse_cache:
             if cached_item_info is None:
-                if not isinstance(fresh_item_info[k], LookupError):
+                if not isinstance(fresh_item_info[k], IpregistryLookupError):
                     self._cache.put(_build_cache_key(items[j], options), fresh_item_info[k])
                 result[j] = fresh_item_info[k]
                 k += 1

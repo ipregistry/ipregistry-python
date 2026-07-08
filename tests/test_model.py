@@ -17,7 +17,7 @@
 import unittest
 
 from ipregistry.json import Connection, Currency, CurrencyFormat, IpInfo, UserAgent
-from ipregistry.model import ApiError, ErrorCode, LookupError, RequesterIpInfo
+from ipregistry.model import ApiError, ErrorCode, IpregistryLookupError, LookupError, RequesterIpInfo
 
 
 class TestIpregistryModel(unittest.TestCase):
@@ -97,11 +97,17 @@ class TestIpregistryModel(unittest.TestCase):
 
     def test_lookup_error_str(self):
         """
-        Test that str(LookupError) returns the error message
+        Test that str(IpregistryLookupError) returns the error message
         """
-        error = LookupError({'code': 'INVALID_ASN', 'message': 'The ASN is invalid.'})
+        error = IpregistryLookupError({'code': 'INVALID_ASN', 'message': 'The ASN is invalid.'})
         self.assertEqual('The ASN is invalid.', str(error))
         self.assertEqual('INVALID_ASN', error.code)
+
+    def test_lookup_error_backward_compatible_alias(self):
+        """
+        Test that the legacy LookupError name remains usable as an alias
+        """
+        self.assertIs(LookupError, IpregistryLookupError)
 
 
 if __name__ == '__main__':

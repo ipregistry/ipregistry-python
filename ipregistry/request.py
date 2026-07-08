@@ -25,7 +25,7 @@ from typing import Union
 import requests
 
 from .model import (ApiError, ApiResponse, ApiResponseCredits, ApiResponseThrottling, AutonomousSystem,
-                    ClientError, IpInfo, LookupError, RequesterAutonomousSystem,
+                    ClientError, IpInfo, IpregistryLookupError, RequesterAutonomousSystem,
                     RequesterIpInfo, RequesterUserAgent, UserAgent)
 
 
@@ -161,7 +161,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         try:
             results = response.json().get('results', [])
             parsed_results = [
-                LookupError(data) if 'code' in data else AutonomousSystem(**data)
+                IpregistryLookupError(data) if 'code' in data else AutonomousSystem(**data)
                 for data in results
             ]
             return self.build_api_response(response, parsed_results)
@@ -177,7 +177,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         try:
             results = response.json().get('results', [])
             parsed_results = [
-                LookupError(data) if 'code' in data else IpInfo(**data)
+                IpregistryLookupError(data) if 'code' in data else IpInfo(**data)
                 for data in results
             ]
             return self.build_api_response(response, parsed_results)
@@ -193,7 +193,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
         try:
             results = response.json().get('results', [])
             parsed_results = [
-                LookupError(data) if 'code' in data else UserAgent(**data)
+                IpregistryLookupError(data) if 'code' in data else UserAgent(**data)
                 for data in results
             ]
             return self.build_api_response(response, parsed_results)
