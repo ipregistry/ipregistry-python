@@ -1,6 +1,6 @@
 [project]
 name = 'ipregistry'
-version = '5.0.0'
+version = "5.0.1"
 description = 'Official Python library for Ipregistry'
 authors = [
     {name = 'Ipregistry Team', email = 'support@ipregistry.co'},

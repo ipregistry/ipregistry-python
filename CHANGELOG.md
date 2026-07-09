@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2026-07-09
+### Fixed
+- Fix batch lookups with a `fields` selection: the API applies the filter to the whole batch
+  response body, so each field is now prefixed with `results.` on batch endpoints. Previously
+  the filter stripped the `results` array itself and the lookup crashed with an `IndexError`.
+- Raise a descriptive `ClientError` when a batch response contains fewer results than requested
+  items, instead of crashing with an `IndexError`.
+
 ## [5.0.0] - 2026-07-07
 ### Added
 - Add an asyncio-based `AsyncIpregistryClient` with the same feature set, available with the `async`
@@ -96,7 +104,8 @@ https://github.com/ipregistry/ipregistry-python#caching
 ## [1.0.0] - 2019-07-28
 - First public release.
 
-[Unreleased]: https://github.com/ipregistry/ipregistry-python/compare/5.0.0...HEAD
+[Unreleased]: https://github.com/ipregistry/ipregistry-python/compare/5.0.1...HEAD
+[5.0.1]: https://github.com/ipregistry/ipregistry-python/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/ipregistry/ipregistry-python/compare/4.0.0...5.0.0
 [4.0.0]: https://github.com/ipregistry/ipregistry-python/compare/3.2.0...4.0.0
 [3.2.0]: https://github.com/ipregistry/ipregistry-python/compare/3.1.0...3.2.0
