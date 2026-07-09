@@ -114,6 +114,20 @@ class TestIpregistryClient(unittest.TestCase):
         client.batch_lookup_ips(['1.1.1.1', '1.1.1.2'])
         self.assertEqual(1, handler.calls)
 
+    def test_batch_response_length_mismatch_raises_client_error(self):
+        """
+        Test that a batch response with fewer results than requested items
+        raises a ClientError instead of crashing with an IndexError
+        """
+        class ShortResponseHandler(CountingRequestHandler):
+            def batch_lookup_ips(self, ips, options):
+                return ApiResponse(ApiResponseCredits(), [], ApiResponseThrottling())
+
+        client = IpregistryClient("tryout", requestHandler=ShortResponseHandler())
+        with self.assertRaises(ClientError) as context:
+            client.batch_lookup_ips(['1.1.1.1', '8.8.8.8'])
+        self.assertIn('0 results for 2', str(context.exception))
+
     def test_max_batch_size_capped(self):
         """
         Test that max_batch_size cannot exceed the API limit of 1024
@@ -219,6 +233,16 @@ class TestIpregistryClientLive(unittest.TestCase):
         self.assertEqual(True, isinstance(response.data[1], LookupError))
         self.assertEqual('INVALID_IP_ADDRESS', response.data[1].code)
         self.assertEqual(True, isinstance(response.data[2], IpInfo))
+
+    def test_batch_lookup_ips_with_fields(self):
+        """
+        Test that batch lookups support field selection
+        """
+        client = IpregistryClient(os.getenv('IPREGISTRY_API_KEY'))
+        response = client.batch_lookup_ips(['8.8.8.8'], fields='ip,location')
+        self.assertEqual('8.8.8.8', response.data[0].ip)
+        self.assertEqual('US', response.data[0].location.country.code)
+        self.assertEqual(None, response.data[0].security)
 
     def test_batch_parse_user_agents(self):
         """

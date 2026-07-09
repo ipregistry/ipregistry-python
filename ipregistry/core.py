@@ -17,7 +17,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .cache import IpregistryCache, NoCache
 from .json import AutonomousSystem, IpInfo
-from .model import IpregistryLookupError, ApiResponse, ApiResponseCredits, ApiResponseThrottling
+from .model import (ApiResponse, ApiResponseCredits, ApiResponseThrottling, ClientError,
+                    IpregistryLookupError)
 from .request import DefaultRequestHandler, IpregistryRequestHandler
 
 MAX_BATCH_SIZE = 1024
@@ -124,6 +125,10 @@ class IpregistryClient:
             )
 
         fresh_item_info = response.data
+        if len(fresh_item_info) != len(cache_misses):
+            raise ClientError(
+                "Batch response contained {} results for {} requested items.".format(
+                    len(fresh_item_info), len(cache_misses)))
         j = 0
         k = 0
 

@@ -169,6 +169,35 @@ class TestAsyncIpregistryClient(unittest.IsolatedAsyncioTestCase):
             self.assertEqual('1.1.1.1', response.data[0].ip)
             self.assertEqual('INVALID_IP_ADDRESS', response.data[1].code)
 
+    async def test_batch_lookup_fields_are_prefixed(self):
+        """
+        Test that async batch lookups prefix the fields selection with 'results.'
+        """
+        seen_queries = []
+
+        def responder(request):
+            seen_queries.append(request.url.query.decode())
+            return httpx.Response(200, json={'results': [{'ip': '8.8.8.8'}]})
+
+        async with build_client(responder) as client:
+            await client.batch_lookup_ips(['8.8.8.8'], fields='ip,location')
+            self.assertIn('results.ip', seen_queries[0])
+            self.assertIn('results.location', seen_queries[0])
+            self.assertNotIn('fields=ip', seen_queries[0])
+
+    async def test_batch_response_length_mismatch_raises_client_error(self):
+        """
+        Test that a batch response with fewer results than requested items
+        raises a ClientError instead of crashing with an IndexError
+        """
+        def responder(request):
+            return httpx.Response(200, json={})
+
+        async with build_client(responder) as client:
+            with self.assertRaises(ClientError) as context:
+                await client.batch_lookup_ips(['1.1.1.1', '8.8.8.8'])
+            self.assertIn('0 results for 2', str(context.exception))
+
     async def test_missing_httpx_raises_helpful_error(self):
         """
         Test that constructing the handler without httpx raises a helpful error

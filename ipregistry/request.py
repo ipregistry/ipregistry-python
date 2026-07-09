@@ -71,6 +71,25 @@ def _raise_api_error(response):
     raise ApiError(code, message, resolution)
 
 
+def _prefix_batch_fields(options):
+    """Return options with the fields selection adjusted for batch endpoints.
+
+    Batch responses wrap entries in a 'results' array and the API applies the
+    fields filter to the whole response body, so each field must be prefixed
+    with 'results.' to select fields of the individual entries."""
+    fields = options.get('fields')
+    if not fields:
+        return options
+
+    result = dict(options)
+    result['fields'] = ','.join(
+        field if field.startswith('results.') else 'results.' + field
+        for field in (part.strip() for part in str(fields).split(','))
+        if field
+    )
+    return result
+
+
 def _is_retryable_status(config, status_code):
     if status_code == 429:
         return config.retry_on_too_many_requests
@@ -155,7 +174,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def batch_lookup_asns(self, asns, options):
         response = self._request_with_retry(
             'POST',
-            self._build_base_url('', options),
+            self._build_base_url('', _prefix_batch_fields(options)),
             data=json.dumps(["AS" + str(asn) for asn in asns])
         )
         try:
@@ -171,7 +190,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def batch_lookup_ips(self, ips, options):
         response = self._request_with_retry(
             'POST',
-            self._build_base_url('', options),
+            self._build_base_url('', _prefix_batch_fields(options)),
             data=json.dumps(ips)
         )
         try:
@@ -187,7 +206,7 @@ class DefaultRequestHandler(IpregistryRequestHandler):
     def batch_parse_user_agents(self, user_agents, options):
         response = self._request_with_retry(
             'POST',
-            self._build_base_url('user_agent', options),
+            self._build_base_url('user_agent', _prefix_batch_fields(options)),
             data=json.dumps(user_agents)
         )
         try:

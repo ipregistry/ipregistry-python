@@ -24,7 +24,8 @@ from .model import (ApiResponse, ApiResponseCredits, ApiResponseThrottling,
                     ClientError, IpregistryLookupError, RequesterAutonomousSystem,
                     RequesterIpInfo, RequesterUserAgent, UserAgent)
 from .request import (DefaultRequestHandler, IpregistryRequestHandler, _backoff_interval,
-                      _build_headers, _is_retryable_status, _raise_api_error, _retry_delay)
+                      _build_headers, _is_retryable_status, _prefix_batch_fields,
+                      _raise_api_error, _retry_delay)
 
 try:
     import httpx
@@ -57,7 +58,7 @@ class AsyncDefaultRequestHandler(IpregistryRequestHandler):
     async def batch_lookup_asns(self, asns, options):
         response = await self._request_with_retry(
             'POST',
-            self._build_base_url('', options),
+            self._build_base_url('', _prefix_batch_fields(options)),
             data=json.dumps(["AS" + str(asn) for asn in asns])
         )
         try:
@@ -73,7 +74,7 @@ class AsyncDefaultRequestHandler(IpregistryRequestHandler):
     async def batch_lookup_ips(self, ips, options):
         response = await self._request_with_retry(
             'POST',
-            self._build_base_url('', options),
+            self._build_base_url('', _prefix_batch_fields(options)),
             data=json.dumps(ips)
         )
         try:
@@ -89,7 +90,7 @@ class AsyncDefaultRequestHandler(IpregistryRequestHandler):
     async def batch_parse_user_agents(self, user_agents, options):
         response = await self._request_with_retry(
             'POST',
-            self._build_base_url('user_agent', options),
+            self._build_base_url('user_agent', _prefix_batch_fields(options)),
             data=json.dumps(user_agents)
         )
         try:
@@ -239,6 +240,10 @@ class AsyncIpregistryClient:
             )
 
         fresh_item_info = response.data
+        if len(fresh_item_info) != len(cache_misses):
+            raise ClientError(
+                "Batch response contained {} results for {} requested items.".format(
+                    len(fresh_item_info), len(cache_misses)))
         j = 0
         k = 0
 

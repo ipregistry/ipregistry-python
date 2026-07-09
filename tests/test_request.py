@@ -50,6 +50,37 @@ class TestIpregistryRequestHandler(unittest.TestCase):
         url = handler._build_base_url('8.8.8.8', {'hostname': True, 'fields': 'location', 'n': 5})
         self.assertEqual('https://api.ipregistry.co/8.8.8.8?hostname=true&fields=location&n=5', url)
 
+    def test_batch_fields_are_prefixed(self):
+        """
+        Test that batch lookups prefix the fields selection with 'results.'
+        as the API applies the filter to the whole batch response body
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('POST', 'https://api.ipregistry.co/',
+                             json={'results': [{'ip': '8.8.8.8'}]})
+        handler.batch_lookup_ips(['8.8.8.8'], {'fields': 'ip, location,results.security'})
+        self.assertEqual(['results.ip,results.location,results.security'],
+                         adapter.last_request.qs['fields'])
+
+    def test_batch_parse_user_agents_fields_are_prefixed(self):
+        """
+        Test that batch user-agent parsing prefixes the fields selection too
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('POST', 'https://api.ipregistry.co/user_agent',
+                             json={'results': [{'name': 'Chrome'}]})
+        handler.batch_parse_user_agents(['Mozilla/5.0'], {'fields': 'name'})
+        self.assertEqual(['results.name'], adapter.last_request.qs['fields'])
+
+    def test_single_lookup_fields_are_not_prefixed(self):
+        """
+        Test that single lookups keep the fields selection unchanged
+        """
+        handler, adapter = build_mocked_handler()
+        adapter.register_uri('GET', 'https://api.ipregistry.co/8.8.8.8', json={'ip': '8.8.8.8'})
+        handler.lookup_ip('8.8.8.8', {'fields': 'ip,location'})
+        self.assertEqual(['ip,location'], adapter.last_request.qs['fields'])
+
     def test_create_api_error_json_response(self):
         """
         Test that a JSON error response raises an ApiError with its fields
