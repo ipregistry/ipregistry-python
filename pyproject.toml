@@ -49,7 +49,7 @@ Repository = 'https://github.com/ipregistry/ipregistry-python'
 dev = [
     'pytest>=9.1.1',
     'requests-mock>=1.12.1,<2.0.0',
-    'ruff>=0.15.20,<0.16.0'
+    'ruff>=0.15.20,<0.17.0'
 ]
 
 [tool.ruff]
