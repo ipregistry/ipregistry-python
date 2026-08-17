@@ -33,6 +33,19 @@ class TestIpregistryModel(unittest.TestCase):
         info = IpInfo(ip='8.8.8.8', connection={'asn': 15169})
         self.assertEqual(15169, info.connection.asn)
 
+    def test_connection_is_anycast(self):
+        """
+        Test that Connection exposes the is_anycast flag and leaves it unset
+        when the field is missing from the response
+        """
+        info = IpInfo(ip='8.8.8.8', connection={'asn': 15169, 'is_anycast': True})
+        self.assertTrue(info.connection.is_anycast)
+
+        info = IpInfo(ip='66.165.2.7', connection={'asn': 3853, 'is_anycast': False})
+        self.assertFalse(info.connection.is_anycast)
+
+        self.assertIsNone(Connection(asn=15169).is_anycast)
+
     def test_currency_format_fields_optional(self):
         """
         Test that CurrencyFormat validates when negative/positive are missing

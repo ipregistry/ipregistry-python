@@ -87,6 +87,7 @@ class Company(BaseModel):
 class Connection(BaseModel):
     asn: Optional[int] = None
     domain: Optional[str] = None
+    is_anycast: Optional[bool] = None
     organization: Optional[str] = None
     route: Optional[str] = None
     type: Optional[str] = None

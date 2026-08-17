@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- New field `Connection.is_anycast` (JSON `connection.is_anycast`): whether the IP address is announced
+  via anycast, i.e. simultaneously from multiple locations.
 
 ## [5.0.1] - 2026-07-09
 ### Fixed
