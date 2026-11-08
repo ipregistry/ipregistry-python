@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - New field `Connection.is_anycast` (JSON `connection.is_anycast`): whether the IP address is announced
   via anycast, i.e. simultaneously from multiple locations.
+- New field `Security.is_residential_proxy` (JSON `security.is_residential_proxy`): whether the IP address
+  is a node of a residential proxy network.
 
 ## [5.0.1] - 2026-07-09
 ### Fixed

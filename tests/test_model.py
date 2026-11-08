@@ -16,7 +16,7 @@
 
 import unittest
 
-from ipregistry.json import Connection, Currency, CurrencyFormat, IpInfo, UserAgent
+from ipregistry.json import Connection, Currency, CurrencyFormat, IpInfo, Security, UserAgent
 from ipregistry.model import ApiError, ErrorCode, IpregistryLookupError, LookupError, RequesterIpInfo
 
 
@@ -45,6 +45,19 @@ class TestIpregistryModel(unittest.TestCase):
         self.assertFalse(info.connection.is_anycast)
 
         self.assertIsNone(Connection(asn=15169).is_anycast)
+
+    def test_security_is_residential_proxy(self):
+        """
+        Test that Security exposes the is_residential_proxy flag and leaves it unset
+        when the field is missing from the response
+        """
+        info = IpInfo(ip='203.0.113.7', security={'is_proxy': True, 'is_residential_proxy': True})
+        self.assertTrue(info.security.is_residential_proxy)
+
+        info = IpInfo(ip='8.8.8.8', security={'is_residential_proxy': False})
+        self.assertFalse(info.security.is_residential_proxy)
+
+        self.assertIsNone(Security(is_proxy=False).is_residential_proxy)
 
     def test_currency_format_fields_optional(self):
         """

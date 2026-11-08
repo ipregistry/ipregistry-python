@@ -192,6 +192,7 @@ class Security(BaseModel):
     is_cloud_provider: Optional[bool] = None
     is_proxy: Optional[bool] = None
     is_relay: Optional[bool] = None
+    is_residential_proxy: Optional[bool] = None
     is_tor: Optional[bool] = None
     is_tor_exit: Optional[bool] = None
     is_anonymous: Optional[bool] = None
